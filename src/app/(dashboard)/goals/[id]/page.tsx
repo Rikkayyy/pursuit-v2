@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import MilestoneList from "@/components/features/goals/MilestoneList";
 import TaskList from "@/components/features/goals/TaskList";
+import GoalActions from "@/components/features/goals/GoalActions";
+import AddMilestone from "@/components/features/goals/AddMilestone";
+import AddTask from "@/components/features/goals/AddTask";
 
 export default async function GoalDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -43,9 +46,12 @@ export default async function GoalDetail({ params }: { params: Promise<{ id: str
           <Link href="/goals" className="text-sm text-gray-700 hover:text-black">
             ← Back
           </Link>
-          <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 uppercase">
-            {goal.status}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 uppercase">
+              {goal.status}
+            </span>
+            <GoalActions goal={goal} />
+          </div>
         </div>
 
         {/* Goal Info */}
@@ -98,6 +104,7 @@ export default async function GoalDetail({ params }: { params: Promise<{ id: str
             <span className="text-xs text-gray-600">{milestonePercent}%</span>
           </div>
           <MilestoneList milestones={milestones} goalColor={goal.color} />
+          <AddMilestone goalId={goal.id} nextOrder={milestones.length} />
         </div>
 
         {/* Tasks / Systems */}
@@ -107,6 +114,7 @@ export default async function GoalDetail({ params }: { params: Promise<{ id: str
             <span className="text-xs text-gray-600">{tasks.length} tasks</span>
           </div>
           <TaskList tasks={tasks} />
+          <AddTask goalId={goal.id} nextOrder={tasks.length}/>
         </div>
       </div>
     </div>

@@ -28,10 +28,18 @@ export default function MilestoneList({
     router.refresh();
   };
 
+  const deleteMilestone = async (id: string) => {
+    if (!confirm("Delete this milestone?")) return;
+    setLoading(id);
+
+    await supabase.from("milestones").delete().eq("id", id);
+
+    setLoading(null);
+    router.refresh();
+  };
+
   if (milestones.length === 0) {
-    return (
-      <p className="mt-3 text-sm text-gray-600">No milestones yet.</p>
-    );
+    return <p className="mt-3 text-sm text-gray-600">No milestones yet.</p>;
   }
 
   return (
@@ -39,7 +47,7 @@ export default function MilestoneList({
       {milestones.map((milestone) => (
         <div
           key={milestone.id}
-          className="flex items-center gap-3 rounded-xl bg-white border border-gray-200 p-3"
+          className="flex items-center gap-3 rounded-xl bg-white border border-gray-200 p-3 group"
         >
           <button
             onClick={() => toggleMilestone(milestone)}
@@ -55,17 +63,23 @@ export default function MilestoneList({
             )}
           </button>
           <span
-            className={`text-sm ${
-              milestone.is_completed ? "text-gray-600 line-through" : "text-gray-900"
+            className={`flex-1 text-sm ${
+              milestone.is_completed ? "text-gray-400 line-through" : "text-black"
             }`}
           >
             {milestone.title}
           </span>
           {milestone.due_date && (
-            <span className="ml-auto text-xs text-gray-600">
+            <span className="text-xs text-gray-600">
               {new Date(milestone.due_date).toLocaleDateString()}
             </span>
           )}
+          <button
+            onClick={() => deleteMilestone(milestone.id)}
+            className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity text-sm"
+          >
+            ✕
+          </button>
         </div>
       ))}
     </div>
