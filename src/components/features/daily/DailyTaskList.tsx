@@ -14,6 +14,7 @@ type DailyTask = {
   goalTitle: string;
   goalColor: string;
   isCompleted: boolean;
+  streak: number;
 };
 
 export default function DailyTaskList({
@@ -31,18 +32,15 @@ export default function DailyTaskList({
     setLoadingId(task.task.id);
 
     if (task.isCompleted) {
-      // Remove the log
       await supabase
         .from("task_logs")
         .delete()
         .eq("task_id", task.task.id)
         .eq("date", today);
     } else {
-      // Get user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Create a log
       await supabase.from("task_logs").insert({
         task_id: task.task.id,
         user_id: user.id,
@@ -103,15 +101,28 @@ export default function DailyTaskList({
                     <span className="text-white text-xs">✓</span>
                   )}
                 </button>
-                <span
-                  className={`text-sm ${
-                    item.isCompleted ? "text-gray-400 line-through" : "text-black"
-                  }`}
-                >
-                  {item.task.title}
-                </span>
+                <div className="flex-1">
+                  <span
+                    className={`text-sm ${
+                      item.isCompleted ? "text-gray-400 line-through" : "text-black"
+                    }`}
+                  >
+                    {item.task.title}
+                  </span>
+                  {item.streak > 0 && (
+                    <span
+                      className="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold"
+                      style={{
+                        backgroundColor: item.goalColor + "15",
+                        color: item.goalColor,
+                      }}
+                    >
+                      🔥 {item.streak} day{item.streak !== 1 ? "s" : ""}
+                    </span>
+                  )}
+                </div>
                 {item.task.type === "one_time" && (
-                  <span className="ml-auto text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
                     One-time
                   </span>
                 )}

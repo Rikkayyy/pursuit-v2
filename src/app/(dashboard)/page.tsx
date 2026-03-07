@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getTaskStreaks } from "@/lib/streaks";
 import SignOutButton from "@/components/ui/SignOutButton";
 import DailyTaskList from "@/components/features/daily/DailyTaskList";
 
@@ -43,6 +44,17 @@ export default async function DailyView() {
 
   const completedTaskIds = new Set(todayLogs?.map((log) => log.task_id) || []);
 
+  // Get streaks for recurring tasks — add this block
+  const allRecurringTaskIds: string[] = [];
+  goals?.forEach((goal) => {
+    goal.tasks?.forEach((task) => {
+      if (task.type === "recurring") {
+        allRecurringTaskIds.push(task.id);
+      }
+    });
+  });
+  const streaks = await getTaskStreaks(supabase, allRecurringTaskIds);
+
   // Filter tasks that are due today
   const todaysTasks: {
     task: {
@@ -57,6 +69,7 @@ export default async function DailyView() {
     goalTitle: string;
     goalColor: string;
     isCompleted: boolean;
+    streak: number;
   }[] = [];
 
   goals?.forEach((goal) => {
@@ -81,6 +94,7 @@ export default async function DailyView() {
           goalTitle: goal.title,
           goalColor: goal.color,
           isCompleted: completedTaskIds.has(task.id),
+          streak: streaks[task.id] || 0,
         });
       }
     });
