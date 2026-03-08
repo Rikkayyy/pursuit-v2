@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getTaskStreaks } from "@/lib/streaks";
+import { cookies } from "next/headers";
 import SignOutButton from "@/components/ui/SignOutButton";
 import DailyTaskList from "@/components/features/daily/DailyTaskList";
 
@@ -12,8 +13,13 @@ export default async function DailyView() {
     redirect("/login");
   }
 
-  const today = new Date().toISOString().split("T")[0];
-  const dayOfWeek = new Date().getDay(); // 0 = Sunday
+  const cookieStore = await cookies();
+  const timezone = cookieStore.get("user_timezone")?.value || "America/Chicago";
+  const now = new Date();
+  const today = now.toLocaleDateString("en-CA", { timeZone: timezone });
+  const dayOfWeek = new Date(
+    now.toLocaleDateString("en-US", { timeZone: timezone })
+  ).getDay();
 
   // Get all active goals with their tasks and today's logs
   const { data: goals } = await supabase
@@ -53,7 +59,7 @@ export default async function DailyView() {
       }
     });
   });
-  const streaks = await getTaskStreaks(supabase, allRecurringTaskIds);
+  const streaks = await getTaskStreaks(supabase, allRecurringTaskIds, timezone);
 
   // Filter tasks that are due today
   const todaysTasks: {
@@ -113,7 +119,9 @@ export default async function DailyView() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600">{greeting}</p>
+            <p className="text-sm text-gray-600">
+              {greeting} · {new Date(today + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+            </p>
             <h1 className="text-2xl font-bold">
               {completedCount === totalCount && totalCount > 0
                 ? "All done today! 🎉"

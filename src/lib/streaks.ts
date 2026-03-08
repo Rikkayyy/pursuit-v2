@@ -2,7 +2,8 @@ import { SupabaseClient } from "@supabase/supabase-js";
 
 export async function getStreak(
   supabase: SupabaseClient,
-  taskId: string
+  taskId: string,
+  timezone: string = "America/Chicago"
 ): Promise<number> {
   const { data: logs } = await supabase
     .from("task_logs")
@@ -13,11 +14,9 @@ export async function getStreak(
   if (!logs || logs.length === 0) return 0;
 
   let streak = 0;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  // Start from today and count backwards
-  const checkDate = new Date(today);
+  const now = new Date();
+  const todayStr = now.toLocaleDateString("en-CA", { timeZone: timezone });
+  const checkDate = new Date(todayStr + "T00:00:00");
 
   for (let i = 0; i < 365; i++) {
     const dateStr = checkDate.toISOString().split("T")[0];
@@ -26,7 +25,6 @@ export async function getStreak(
     if (found) {
       streak++;
     } else if (i === 0) {
-      // Today hasn't been completed yet, that's okay — check yesterday
       checkDate.setDate(checkDate.getDate() - 1);
       continue;
     } else {
@@ -41,12 +39,13 @@ export async function getStreak(
 
 export async function getTaskStreaks(
   supabase: SupabaseClient,
-  taskIds: string[]
+  taskIds: string[],
+  timezone: string = "America/Chicago"
 ): Promise<Record<string, number>> {
   const streaks: Record<string, number> = {};
 
   for (const id of taskIds) {
-    streaks[id] = await getStreak(supabase, id);
+    streaks[id] = await getStreak(supabase, id, timezone);
   }
 
   return streaks;
