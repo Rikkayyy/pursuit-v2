@@ -17,12 +17,22 @@ type DailyTask = {
   streak: number;
 };
 
+function getConsistencyLabel(rate: number): { text: string; color: string; bg: string } {
+  if (rate >= 90) return { text: "CONSISTENCY: HIGH", color: "#16a34a", bg: "#f0fdf4" };
+  if (rate >= 70) return { text: `${rate}% THIS WEEK`, color: "#ea580c", bg: "#fff7ed" };
+  if (rate >= 40) return { text: `${rate}% THIS WEEK`, color: "#d97706", bg: "#fffbeb" };
+  if (rate > 0) return { text: `${rate}% THIS WEEK`, color: "#dc2626", bg: "#fef2f2" };
+  return { text: "NOT STARTED", color: "#9ca3af", bg: "#f3f4f6" };
+}
+
 export default function DailyTaskList({
   tasks,
   today,
+  goalStats,
 }: {
   tasks: DailyTask[];
   today: string;
+  goalStats: Record<string, { rate: number }>;
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -53,7 +63,7 @@ export default function DailyTaskList({
   };
 
   // Group tasks by goal
-  const grouped: Record<string, { goalTitle: string; goalColor: string; tasks: DailyTask[] }> = {};
+  const grouped: Record<string, { goalTitle: string; goalColor: string; goalId: string; tasks: DailyTask[] }> = {};
 
   tasks.forEach((t) => {
     const key = t.task.goal_id;
@@ -61,6 +71,7 @@ export default function DailyTaskList({
       grouped[key] = {
         goalTitle: t.goalTitle,
         goalColor: t.goalColor,
+        goalId: key,
         tasks: [],
       };
     }
@@ -69,68 +80,81 @@ export default function DailyTaskList({
 
   return (
     <div className="space-y-6">
-      {Object.entries(grouped).map(([goalId, group]) => (
-        <div key={goalId}>
-          <div className="flex items-center gap-2 mb-2">
-            <div
-              className="h-2.5 w-2.5 rounded-full"
-              style={{ backgroundColor: group.goalColor }}
-            />
-            <h3 className="text-sm font-semibold text-gray-700">{group.goalTitle}</h3>
-          </div>
-          <div className="space-y-2">
-            {group.tasks.map((item) => (
+      {Object.entries(grouped).map(([goalId, group]) => {
+        const stats = goalStats[group.goalId];
+        const label = stats ? getConsistencyLabel(stats.rate) : null;
+
+        return (
+          <div key={goalId}>
+            <div className="flex items-center gap-2 mb-2">
               <div
-                key={item.task.id}
-                className={`flex items-center gap-3 rounded-xl border p-3 transition-all ${
-                  item.isCompleted
-                    ? "bg-gray-50 border-gray-100"
-                    : "bg-white border-gray-200"
-                }`}
-              >
-                <button
-                  onClick={() => toggleTask(item)}
-                  disabled={loadingId === item.task.id}
-                  className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all"
-                  style={{
-                    borderColor: item.isCompleted ? item.goalColor : "#d1d5db",
-                    backgroundColor: item.isCompleted ? item.goalColor : "transparent",
-                  }}
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: group.goalColor }}
+              />
+              <h3 className="text-sm font-semibold text-gray-700">{group.goalTitle}</h3>
+              {label && (
+                <span
+                  className="ml-auto text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5"
+                  style={{ color: label.color, backgroundColor: label.bg }}
                 >
-                  {item.isCompleted && (
-                    <span className="text-white text-xs">✓</span>
-                  )}
-                </button>
-                <div className="flex-1">
-                  <span
-                    className={`text-sm ${
-                      item.isCompleted ? "text-gray-400 line-through" : "text-black"
-                    }`}
+                  {label.text}
+                </span>
+              )}
+            </div>
+            <div className="space-y-2">
+              {group.tasks.map((item) => (
+                <div
+                  key={item.task.id}
+                  className={`flex items-center gap-3 rounded-xl border p-3 transition-all ${
+                    item.isCompleted
+                      ? "bg-gray-50 border-gray-100"
+                      : "bg-white border-gray-200"
+                  }`}
+                >
+                  <button
+                    onClick={() => toggleTask(item)}
+                    disabled={loadingId === item.task.id}
+                    className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all"
+                    style={{
+                      borderColor: item.isCompleted ? item.goalColor : "#d1d5db",
+                      backgroundColor: item.isCompleted ? item.goalColor : "transparent",
+                    }}
                   >
-                    {item.task.title}
-                  </span>
-                  {item.streak > 0 && (
+                    {item.isCompleted && (
+                      <span className="text-white text-xs">✓</span>
+                    )}
+                  </button>
+                  <div className="flex-1">
                     <span
-                      className="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold"
-                      style={{
-                        backgroundColor: item.goalColor + "15",
-                        color: item.goalColor,
-                      }}
+                      className={`text-sm ${
+                        item.isCompleted ? "text-gray-400 line-through" : "text-black"
+                      }`}
                     >
-                      🔥 {item.streak} day{item.streak !== 1 ? "s" : ""}
+                      {item.task.title}
+                    </span>
+                    {item.streak > 0 && (
+                      <span
+                        className="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold"
+                        style={{
+                          backgroundColor: item.goalColor + "15",
+                          color: item.goalColor,
+                        }}
+                      >
+                        🔥 {item.streak} day{item.streak !== 1 ? "s" : ""}
+                      </span>
+                    )}
+                  </div>
+                  {item.task.type === "one_time" && (
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                      One-time
                     </span>
                   )}
                 </div>
-                {item.task.type === "one_time" && (
-                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                    One-time
-                  </span>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

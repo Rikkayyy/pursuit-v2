@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import SignOutButton from "@/components/ui/SignOutButton";
 import DailyTaskList from "@/components/features/daily/DailyTaskList";
 import { getDailyCompletions } from "@/lib/weekly-stats";
+import { getWeeklyHitRate } from "@/lib/weekly-stats";
 
 export default async function DailyView() {
   const supabase = await createClient();
@@ -72,6 +73,15 @@ export default async function DailyView() {
     });
   });
   const dailyActivity = await getDailyCompletions(supabase, allTaskIds, timezone);
+
+  // Calculate weekly hit rate per goal
+  const goalStats: Record<string, { rate: number }> = {};
+  for (const goal of goals || []) {
+    if (goal.tasks && goal.tasks.length > 0) {
+      const stats = await getWeeklyHitRate(supabase, goal.tasks, timezone);
+      goalStats[goal.id] = { rate: stats.rate };
+    }
+  }
 
   // Filter tasks that are due today
   const todaysTasks: {
@@ -225,7 +235,7 @@ export default async function DailyView() {
           </div>
         ) : (
           <div className="mt-8">
-            <DailyTaskList tasks={todaysTasks} today={today} />
+            <DailyTaskList tasks={todaysTasks} today={today} goalStats={goalStats} />
           </div>
         )}
       </div>
