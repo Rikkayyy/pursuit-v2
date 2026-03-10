@@ -269,7 +269,7 @@ export default function GoalForm() {
       <div>
         <div className="flex items-center justify-between">
           <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
-            Milestones (optional)
+            Define your Plan through milestones
           </label>
           <button
             type="button"
