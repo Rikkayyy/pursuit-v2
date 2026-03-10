@@ -6,14 +6,8 @@ import DailyTaskList from "@/components/features/daily/DailyTaskList";
 import { getDailyCompletions } from "@/lib/weekly-stats";
 import { getWeeklyHitRate } from "@/lib/weekly-stats";
 import AnytimeTask from "@/components/features/daily/AnytimeTask";
-import DateSelector from "@/components/ui/DateSelector";
 
-export default async function DailyView({
-    searchParams,
-  }: {
-    searchParams: Promise<{ date?: string }>;
-  }) {
-
+export default async function DailyView() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -25,11 +19,9 @@ export default async function DailyView({
   const timezone = cookieStore.get("user_timezone")?.value || "America/Chicago";
   const now = new Date();
   const today = now.toLocaleDateString("en-CA", { timeZone: timezone });
-
-  const { date: dateParam } = await searchParams;
-  const selectedDate = dateParam || today;
-  const dayOfWeek = new Date(selectedDate + "T12:00:00").getDay();
-  const isToday = selectedDate === today;
+  const dayOfWeek = new Date(
+    now.toLocaleDateString("en-US", { timeZone: timezone })
+  ).getDay();
 
   // Get all active goals with their tasks and today's logs
   const { data: goals } = await supabase
@@ -56,7 +48,7 @@ export default async function DailyView({
     .from("task_logs")
     .select("task_id")
     .eq("user_id", user.id)
-    .eq("date", selectedDate);
+    .eq("date", today);
 
   const completedTaskIds = new Set(todayLogs?.map((log) => log.task_id) || []);
 
@@ -121,7 +113,7 @@ export default async function DailyView({
           isDueToday = task.scheduled_days.includes(dayOfWeek);
         }
       } else if (task.type === "one_time") {
-        isDueToday = task.due_date === selectedDate;
+        isDueToday = task.due_date === today;
       }
 
       if (isDueToday) {
@@ -178,32 +170,27 @@ export default async function DailyView({
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600">{greeting}</p>
+            <p className="text-sm text-gray-600">
+              {greeting} · {new Date(today + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+            </p>
             <h1 className="text-2xl font-bold">
               {completedCount === totalCount && totalCount > 0
-                ? isToday ? "All done today! 🎉" : "All done that day! 🎉"
+                ? "All done today! 🎉"
                 : "You're in motion"}
             </h1>
             <p className="text-sm text-gray-600 mt-0.5">
               {completedCount === 0 && totalCount > 0
-                ? isToday ? "Let's get started — that counts." : "No tasks were logged."
+                ? "Let's get started — that counts."
                 : completedCount === totalCount && totalCount > 0
                 ? "Every task completed. Great work."
-                : `${completedCount} of ${totalCount} done${isToday ? " — keep going." : "."}`}
+                : `${completedCount} of ${totalCount} done — keep going.`}
             </p>
           </div>
           <div className="text-right">
             <span className="text-2xl font-bold">{completedCount}</span>
             <span className="text-gray-600">/{totalCount}</span>
-            <div className="mt-1">
-              <a href="/settings" className="text-xs text-gray-500 hover:text-black">⚙️</a>
-            </div>
+            <a href="/settings" className="text-xs text-gray-500 hover:text-black">⚙️</a>
           </div>
-        </div>
-
-        {/* Date Selector */}
-        <div className="mt-4">
-          <DateSelector currentDate={selectedDate} today={today} />
         </div>
 
         {/* 7-Day Activity */}
@@ -277,7 +264,7 @@ export default async function DailyView({
           </div>
         ) : (
           <div className="mt-8">
-            <DailyTaskList tasks={todaysTasks} today={selectedDate} goalStats={goalStats} />
+            <DailyTaskList tasks={todaysTasks} today={today} goalStats={goalStats} />
             {/* Anytime Tasks */}
             {anytimeTasks.length > 0 && (
               <div className="mt-8">
@@ -286,7 +273,7 @@ export default async function DailyView({
                 </h2>
                 <div className="space-y-2">
                   {anytimeTasks.map((item) => (
-                    <AnytimeTask key={item.task.id} item={item} today={selectedDate} />
+                    <AnytimeTask key={item.task.id} item={item} today={today} />
                   ))}
                 </div>
               </div>
