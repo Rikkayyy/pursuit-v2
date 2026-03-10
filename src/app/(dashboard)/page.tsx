@@ -1,19 +1,17 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getTaskStreaks } from "@/lib/streaks";
 import { cookies } from "next/headers";
-import DailyTaskList from "@/components/features/daily/DailyTaskList";
-import { getDailyCompletions } from "@/lib/weekly-stats";
-import { getWeeklyHitRate } from "@/lib/weekly-stats";
-import AnytimeTask from "@/components/features/daily/AnytimeTask";
+import { getTaskStreaks } from "@/lib/streaks";
+import { getDailyCompletions, getWeeklyHitRate } from "@/lib/weekly-stats";
 import DateSelector from "@/components/ui/DateSelector";
+import DailyTaskList from "@/components/features/daily/DailyTaskList";
+import AnytimeTask from "@/components/features/daily/AnytimeTask";
 
 export default async function DailyView({
-    searchParams,
-  }: {
-    searchParams: Promise<{ date?: string }>;
-  }) {
-
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>;
+}) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -31,27 +29,18 @@ export default async function DailyView({
   const dayOfWeek = new Date(selectedDate + "T12:00:00").getDay();
   const isToday = selectedDate === today;
 
-  // Get all active goals with their tasks and today's logs
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
+
   const { data: goals } = await supabase
     .from("goals")
     .select(`
-      id,
-      title,
-      color,
-      tasks (
-        id,
-        title,
-        type,
-        frequency,
-        scheduled_days,
-        due_date,
-        goal_id
-      )
+      id, title, color,
+      tasks (id, title, type, frequency, scheduled_days, due_date, goal_id)
     `)
     .eq("user_id", user.id)
     .eq("status", "active");
 
-  // Get today's task logs
   const { data: todayLogs } = await supabase
     .from("task_logs")
     .select("task_id")
@@ -60,7 +49,6 @@ export default async function DailyView({
 
   const completedTaskIds = new Set(todayLogs?.map((log) => log.task_id) || []);
 
-  // Get streaks for recurring tasks — add this block
   const allRecurringTaskIds: string[] = [];
   goals?.forEach((goal) => {
     goal.tasks?.forEach((task) => {
@@ -71,7 +59,6 @@ export default async function DailyView({
   });
   const streaks = await getTaskStreaks(supabase, allRecurringTaskIds, timezone);
 
-  // Get 7-day activity for all tasks
   const allTaskIds: string[] = [];
   goals?.forEach((goal) => {
     goal.tasks?.forEach((task) => {
@@ -82,7 +69,6 @@ export default async function DailyView({
   });
   const dailyActivity = await getDailyCompletions(supabase, allTaskIds, timezone);
 
-  // Calculate weekly hit rate per goal
   const goalStats: Record<string, { rate: number }> = {};
   for (const goal of goals || []) {
     if (goal.tasks && goal.tasks.length > 0) {
@@ -91,7 +77,6 @@ export default async function DailyView({
     }
   }
 
-  // Filter tasks that are due today
   const todaysTasks: {
     task: {
       id: string;
@@ -116,7 +101,7 @@ export default async function DailyView({
         if (task.frequency === "daily") {
           isDueToday = true;
         } else if (task.frequency === "weekly") {
-          isDueToday = dayOfWeek === 1; // Mondays
+          isDueToday = dayOfWeek === 1;
         } else if (task.frequency === "specific_days" && task.scheduled_days) {
           isDueToday = task.scheduled_days.includes(dayOfWeek);
         }
@@ -136,7 +121,6 @@ export default async function DailyView({
     });
   });
 
-  // Collect one-time tasks with no due date
   const anytimeTasks: {
     task: {
       id: string;
@@ -167,24 +151,28 @@ export default async function DailyView({
 
   const completedCount = todaysTasks.filter((t) => t.isCompleted).length;
   const totalCount = todaysTasks.length;
+  const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
-  // Greeting based on time of day
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  // SVG circle math
+  const radius = 34;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="mx-auto max-w-lg">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-600">{greeting}</p>
-            <h1 className="text-2xl font-bold">
+    <>
+      {/* Header */}
+      <header className="px-6 pt-12 pb-8 bg-gradient-to-b from-primary/5 to-transparent relative overflow-hidden">
+        <div className="flex items-center justify-between relative z-10">
+          <div className="space-y-1">
+            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              {hour < 12 ? "☀️" : hour < 18 ? "🌤" : "🌙"} {greeting}
+            </h2>
+            <h1 className="text-3xl font-heading font-extrabold text-foreground tracking-tight">
               {completedCount === totalCount && totalCount > 0
-                ? isToday ? "All done today! 🎉" : "All done that day! 🎉"
+                ? isToday ? "All done! 🎉" : "Perfect day!"
                 : "You're in motion"}
             </h1>
-            <p className="text-sm text-gray-600 mt-0.5">
+            <p className="text-sm text-muted-foreground/80 font-medium">
               {completedCount === 0 && totalCount > 0
                 ? isToday ? "Let's get started — that counts." : "No tasks were logged."
                 : completedCount === totalCount && totalCount > 0
@@ -192,56 +180,99 @@ export default async function DailyView({
                 : `${completedCount} of ${totalCount} done${isToday ? " — keep going." : "."}`}
             </p>
           </div>
-          <div className="text-right">
-            <span className="text-2xl font-bold">{completedCount}</span>
-            <span className="text-gray-600">/{totalCount}</span>
-            <div className="mt-1">
-              <a href="/settings" className="text-xs text-gray-500 hover:text-black">⚙️</a>
+
+          {/* Progress Ring */}
+          <div className="relative flex items-center justify-center">
+            <div className="absolute inset-0 bg-primary/25 blur-2xl rounded-full scale-110" />
+            <svg className="w-20 h-20 transform -rotate-90 relative z-10">
+              <circle
+                r={radius}
+                cx="40"
+                cy="40"
+                fill="transparent"
+                stroke="currentColor"
+                className="text-secondary"
+                strokeWidth="6"
+              />
+              <circle
+                r={radius}
+                cx="40"
+                cy="40"
+                fill="transparent"
+                stroke="currentColor"
+                className="text-primary drop-shadow-[0_0_8px_rgba(255,0,85,0.6)]"
+                strokeWidth="6"
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                style={{ transition: "stroke-dashoffset 1s ease" }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center flex-col leading-none">
+              <div className="flex items-baseline gap-0.5 relative z-20">
+                <span className="text-2xl font-heading font-black text-foreground">{completedCount}</span>
+                <span className="text-sm font-bold text-muted-foreground/60">/{totalCount}</span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Date Selector */}
-        <div className="mt-4">
+        <div className="mt-4 relative z-10">
           <DateSelector currentDate={selectedDate} today={today} />
         </div>
 
-        {/* 7-Day Activity */}
-        {totalCount > 0 && (
-          <div className="mt-6 rounded-xl bg-white border border-gray-200 p-4">
+        {/* Settings */}
+        <a href="/settings" className="absolute top-12 right-6 text-muted-foreground hover:text-foreground transition-colors z-10">
+          ⚙️
+        </a>
+      </header>
+
+      {/* 7-Day Activity */}
+      {totalCount > 0 && (
+        <section className="px-6 mb-8">
+          <div className="bg-card border border-border/50 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Past 7 Days</p>
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Past 7 Days
+              </h3>
               {(() => {
                 const totalCompleted = dailyActivity.reduce((sum, d) => sum + d.count, 0);
                 const totalExpected = dailyActivity.reduce((sum, d) => sum + d.total, 0);
                 const rate = totalExpected > 0 ? Math.round((totalCompleted / totalExpected) * 100) : 0;
                 return (
-                  <span className="text-xs font-bold text-black">{rate}% hit rate</span>
+                  <span className="text-xs font-bold text-primary px-2 py-0.5 bg-primary/10 rounded-full">
+                    {rate}% hit rate
+                  </span>
                 );
               })()}
             </div>
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex justify-between items-end gap-1.5">
               {dailyActivity.map((day) => {
                 const ratio = day.total > 0 ? day.count / day.total : 0;
-                const dayLabel = new Date(day.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" }).charAt(0);
+                const dayLabel = new Date(day.date + "T12:00:00")
+                  .toLocaleDateString("en-US", { weekday: "short" })
+                  .charAt(0);
+                const isSelected = day.date === selectedDate;
+
                 return (
-                  <div key={day.date} className="flex flex-col items-center gap-1.5">
+                  <div key={day.date} className="flex-1 flex flex-col items-center gap-1.5">
                     <div
-                      className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold"
-                      style={{
-                        backgroundColor: ratio === 0
-                          ? "#f3f4f6"
+                      className={`h-8 w-full rounded-full transition-all ${
+                        ratio === 0
+                          ? "bg-secondary"
                           : ratio < 0.5
-                          ? "#fecaca"
+                          ? "bg-primary/30"
                           : ratio < 1
-                          ? "#fca5a5"
-                          : "#ef4444",
-                        color: ratio > 0 ? "white" : "#9ca3af",
-                      }}
+                          ? "bg-primary/60"
+                          : "bg-primary"
+                      }`}
+                    />
+                    <span
+                      className={`text-[10px] font-bold ${
+                        isSelected ? "text-primary" : "text-muted-foreground"
+                      }`}
                     >
-                      {ratio === 1 ? "✓" : ratio > 0 ? Math.round(ratio * 100) : ""}
-                    </div>
-                    <span className={`text-[10px] font-bold ${day.date === today ? "text-black" : "text-gray-400"}`}>
                       {dayLabel}
                     </span>
                   </div>
@@ -249,51 +280,58 @@ export default async function DailyView({
               })}
             </div>
           </div>
-        )}
+        </section>
+      )}
 
-        {/* Motivational Nudge */}
-        {totalCount > 0 && completedCount < totalCount && totalCount - completedCount <= 2 && (
-          <div className="mt-4 rounded-xl bg-black text-white p-3 text-center text-sm font-medium">
+      {/* Motivational Nudge */}
+      {totalCount > 0 && completedCount < totalCount && totalCount - completedCount <= 2 && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-xs text-center z-40">
+          <div className="bg-foreground text-background px-4 py-2 rounded-full shadow-xl text-xs font-bold flex items-center justify-center gap-2">
             ✨ {totalCount - completedCount === 1 ? "One more" : "Two more"} for a &quot;Full Day&quot;!
           </div>
-        )}
+        </div>
+      )}
 
-        {totalCount > 0 && completedCount === totalCount && (
-          <div className="mt-4 rounded-xl bg-green-50 border border-green-200 text-green-700 p-3 text-center text-sm font-medium">
+      {totalCount > 0 && completedCount === totalCount && (
+        <div className="px-6 mb-6">
+          <div className="bg-accent border border-accent-foreground/10 text-accent-foreground rounded-2xl p-3 text-center text-sm font-bold">
             🎉 Full Day! You completed everything.
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Task List */}
-        {totalCount === 0 ? (
+      {/* Task List */}
+      <main className="px-6 space-y-8">
+        {totalCount === 0 && anytimeTasks.length === 0 ? (
           <div className="mt-12 text-center">
-            <p className="text-gray-600">No tasks scheduled for today.</p>
-            <a
+            <p className="text-muted-foreground">No tasks scheduled for today.</p>
+            
+              <a
               href="/goals/new"
-              className="mt-2 inline-block text-sm font-medium text-black hover:underline"
+              className="mt-2 inline-block text-sm font-bold text-primary hover:underline"
             >
               Create a goal to get started
             </a>
           </div>
         ) : (
-          <div className="mt-8">
+          <>
             <DailyTaskList tasks={todaysTasks} today={selectedDate} goalStats={goalStats} />
-            {/* Anytime Tasks */}
+
             {anytimeTasks.length > 0 && (
-              <div className="mt-8">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-3">
+              <section>
+                <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
                   Anytime
                 </h2>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {anytimeTasks.map((item) => (
                     <AnytimeTask key={item.task.id} item={item} today={selectedDate} />
                   ))}
                 </div>
-              </div>
+              </section>
             )}
-          </div>
+          </>
         )}
-      </div>
-    </div>
+      </main>
+    </>
   );
 }

@@ -62,7 +62,6 @@ export default function DailyTaskList({
     router.refresh();
   };
 
-  // Group tasks by goal
   const grouped: Record<string, { goalTitle: string; goalColor: string; goalId: string; tasks: DailyTask[] }> = {};
 
   tasks.forEach((t) => {
@@ -79,80 +78,128 @@ export default function DailyTaskList({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {Object.entries(grouped).map(([goalId, group]) => {
         const stats = goalStats[group.goalId];
         const label = stats ? getConsistencyLabel(stats.rate) : null;
 
         return (
-          <div key={goalId}>
-            <div className="flex items-center gap-2 mb-2">
-              <div
-                className="h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: group.goalColor }}
-              />
-              <h3 className="text-sm font-semibold text-gray-700">{group.goalTitle}</h3>
+          <section key={goalId}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{
+                    backgroundColor: group.goalColor,
+                    boxShadow: `0 0 8px ${group.goalColor}66`,
+                  }}
+                />
+                <h3 className="font-heading font-bold text-lg text-foreground">
+                  {group.goalTitle}
+                </h3>
+              </div>
               {label && (
                 <span
-                  className="ml-auto text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5"
+                  className="text-[10px] font-black uppercase tracking-tighter rounded-full px-2 py-0.5"
                   style={{ color: label.color, backgroundColor: label.bg }}
                 >
                   {label.text}
                 </span>
               )}
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {group.tasks.map((item) => (
                 <div
                   key={item.task.id}
-                  className={`flex items-center gap-3 rounded-xl border p-3 transition-all ${
+                  className={`rounded-2xl p-4 flex items-center gap-4 relative overflow-hidden transition-all active:scale-[0.98] cursor-pointer ${
                     item.isCompleted
-                      ? "bg-gray-50 border-gray-100"
-                      : "bg-white border-gray-200"
+                      ? "bg-secondary/30 border border-border/30 opacity-80"
+                      : "bg-card border border-border/50 shadow-sm hover:shadow-md"
                   }`}
                 >
+                  {/* Color bar */}
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl"
+                    style={{
+                      backgroundColor: item.isCompleted
+                        ? group.goalColor + "66"
+                        : group.goalColor,
+                    }}
+                  />
+
+                  {/* Checkbox */}
                   <button
                     onClick={() => toggleTask(item)}
                     disabled={loadingId === item.task.id}
-                    className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all"
+                    className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
+                      item.isCompleted
+                        ? "text-white border-2"
+                        : "border-2 border-muted-foreground/30 hover:border-current"
+                    }`}
                     style={{
-                      borderColor: item.isCompleted ? item.goalColor : "#d1d5db",
-                      backgroundColor: item.isCompleted ? item.goalColor : "transparent",
+                      backgroundColor: item.isCompleted ? group.goalColor : "transparent",
+                      borderColor: item.isCompleted ? group.goalColor : undefined,
+                      ...(item.isCompleted
+                        ? { boxShadow: `0 0 12px ${group.goalColor}66` }
+                        : {}),
                     }}
                   >
                     {item.isCompleted && (
-                      <span className="text-white text-xs">✓</span>
+                      <span className="text-sm">✓</span>
                     )}
                   </button>
+
+                  {/* Content */}
                   <div className="flex-1">
-                    <span
-                      className={`text-sm ${
-                        item.isCompleted ? "text-gray-400 line-through" : "text-black"
+                    <h4
+                      className={`font-bold text-base leading-tight ${
+                        item.isCompleted
+                          ? "text-muted-foreground line-through decoration-muted-foreground/40"
+                          : "text-foreground"
                       }`}
                     >
                       {item.task.title}
-                    </span>
-                    {item.streak > 0 && (
-                      <span
-                        className="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold"
-                        style={{
-                          backgroundColor: item.goalColor + "15",
-                          color: item.goalColor,
-                        }}
-                      >
-                        🔥 {item.streak} day{item.streak !== 1 ? "s" : ""}
-                      </span>
-                    )}
+                    </h4>
+                    <div className="flex items-center gap-2 mt-2">
+                      {item.streak > 0 && (
+                        <span
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider"
+                          style={
+                            item.streak >= 7
+                              ? {
+                                  backgroundColor: "#f97316",
+                                  color: "white",
+                                  boxShadow: "0 4px 12px rgba(249, 115, 22, 0.3)",
+                                }
+                              : {
+                                  backgroundColor: group.goalColor + "15",
+                                  color: group.goalColor,
+                                  border: `1px solid ${group.goalColor}33`,
+                                }
+                          }
+                        >
+                          🔥 {item.streak} day{item.streak !== 1 ? "s" : ""}
+                          {item.streak >= 7 ? " ultra" : " streak"}
+                        </span>
+                      )}
+                      {item.task.type === "one_time" && (
+                        <span
+                          className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border"
+                          style={{
+                            backgroundColor: group.goalColor + "15",
+                            color: group.goalColor,
+                            borderColor: group.goalColor + "33",
+                          }}
+                        >
+                          📅 One-time Task
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  {item.task.type === "one_time" && (
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                      One-time
-                    </span>
-                  )}
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         );
       })}
     </div>

@@ -39,7 +39,6 @@ export default async function GoalsOverview({
   const completedCount = goals?.filter((g) => g.status === "completed").length || 0;
   const archivedCount = goals?.filter((g) => g.status === "archived").length || 0;
 
-  // Calculate weekly hit rate for each goal
   const goalsWithStats = await Promise.all(
     filteredGoals.map(async (goal) => {
       const weeklyStats = await getWeeklyHitRate(supabase, goal.tasks || [], timezone);
@@ -54,23 +53,23 @@ export default async function GoalsOverview({
     ) || 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="mx-auto max-w-lg">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">My Goals</h1>
-            <p className="text-sm text-gray-700">
-              {activeCount} Active · {totalRemainingMilestones} Milestones left
-            </p>
-          </div>
-          <Link
-            href="/goals/new"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white text-lg hover:bg-gray-800"
-          >
-            +
-          </Link>
+    <>
+      <header className="px-6 pt-12 pb-6 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-40 border-b border-border/50">
+        <div>
+          <h1 className="text-3xl font-heading font-extrabold text-foreground">My Goals</h1>
+          <p className="text-muted-foreground text-sm font-medium mt-1">
+            {activeCount} Active • {totalRemainingMilestones} Milestones left
+          </p>
         </div>
+        <Link
+          href="/goals/new"
+          className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground hover:bg-primary/80 transition-all shadow-md active:scale-95"
+        >
+          <span className="text-xl">+</span>
+        </Link>
+      </header>
 
+      <main className="px-6 py-6 space-y-4">
         <GoalFilters
           current={currentFilter}
           counts={{ active: activeCount, completed: completedCount, archived: archivedCount }}
@@ -78,7 +77,7 @@ export default async function GoalsOverview({
 
         {filteredGoals.length === 0 ? (
           <div className="mt-12 text-center">
-            <p className="text-gray-700">
+            <p className="text-muted-foreground">
               {currentFilter === "active"
                 ? "No active goals."
                 : currentFilter === "completed"
@@ -88,20 +87,37 @@ export default async function GoalsOverview({
             {currentFilter === "active" && (
               <Link
                 href="/goals/new"
-                className="mt-2 inline-block text-sm font-medium text-black hover:underline"
+                className="mt-2 inline-block text-sm font-bold text-primary hover:underline"
               >
                 Create your first goal
               </Link>
             )}
           </div>
         ) : (
-          <div className="mt-4 space-y-4">
-            {goalsWithStats.map((goal) => (
-              <GoalCard key={goal.id} goal={goal} weeklyStats={goal.weeklyStats} />
-            ))}
+          <div className="space-y-4">
+            {goalsWithStats.map((goal) =>
+              goal.status === "archived" ? (
+                <div
+                  key={goal.id}
+                  className="bg-muted/30 border border-border/40 rounded-3xl p-5 shadow-none flex items-center gap-4 opacity-60"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground text-xl">
+                    📦
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-lg font-heading font-bold text-muted-foreground">{goal.title}</h2>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                      ARCHIVED
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <GoalCard key={goal.id} goal={goal} weeklyStats={goal.weeklyStats} />
+              )
+            )}
           </div>
         )}
-      </div>
-    </div>
+      </main>
+    </>
   );
 }

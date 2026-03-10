@@ -1,9 +1,9 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import GoalActions from "@/components/features/goals/GoalActions";
 import MilestoneList from "@/components/features/goals/MilestoneList";
 import TaskList from "@/components/features/goals/TaskList";
-import GoalActions from "@/components/features/goals/GoalActions";
 import AddMilestone from "@/components/features/goals/AddMilestone";
 import AddTask from "@/components/features/goals/AddTask";
 
@@ -39,84 +39,121 @@ export default async function GoalDetail({ params }: { params: Promise<{ id: str
     : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="mx-auto max-w-lg">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <Link href="/goals" className="text-sm text-gray-700 hover:text-black">
-            ← Back
-          </Link>
-          <div className="flex items-center gap-3">
-            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 uppercase">
-              {goal.status}
-            </span>
-            <GoalActions goal={goal} />
-          </div>
-        </div>
+    <>
+      <div className="h-10" />
 
+      {/* Header */}
+      <header className="px-6 flex items-center justify-between mb-8">
+        <Link
+          href="/goals"
+          className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground active:scale-90 transition-transform"
+        >
+          ←
+        </Link>
+        <div className="flex items-center gap-2">
+          <span
+            className="px-4 py-2 rounded-full font-bold text-xs"
+            style={{
+              backgroundColor: goal.color + "15",
+              color: goal.color,
+            }}
+          >
+            {goal.status.toUpperCase()}
+          </span>
+          <GoalActions goal={goal} />
+        </div>
+      </header>
+
+      <main className="px-6 space-y-10">
         {/* Goal Info */}
-        <div className="mt-4">
-          <div className="flex items-center gap-2">
+        <section>
+          <div className="flex items-center gap-3 mb-2">
             <div
-              className="h-4 w-4 rounded-full"
+              className="w-10 h-10 rounded-2xl flex items-center justify-center text-white text-xl"
               style={{ backgroundColor: goal.color }}
-            />
-            <h1 className="text-2xl font-bold">{goal.title}</h1>
+            >
+              🎯
+            </div>
+            <h1 className="text-3xl font-heading font-extrabold">{goal.title}</h1>
           </div>
           {goal.description && (
-            <p className="mt-1 text-sm text-gray-700">{goal.description}</p>
+            <p className="text-muted-foreground text-base leading-relaxed">{goal.description}</p>
           )}
-        </div>
+        </section>
 
         {/* Stats */}
-        <div className="mt-6 grid grid-cols-2 gap-4">
-          <div className="rounded-xl bg-white border border-gray-200 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Milestones
-            </p>
-            <p className="mt-1 text-xl font-bold">
-              {completedMilestones} <span className="text-sm font-normal text-gray-600">/ {milestones.length}</span>
-            </p>
-            <p className="text-xs text-gray-600">
+        <section className="grid grid-cols-2 gap-4">
+          <div className="bg-card border border-border/60 rounded-3xl p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center"
+                style={{
+                  backgroundColor: goal.color + "15",
+                  color: goal.color,
+                }}
+              >
+                🏅
+              </div>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                Milestones
+              </span>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-heading font-bold">{completedMilestones}</span>
+              <span className="text-muted-foreground text-lg">/ {milestones.length}</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
               {milestones.length - completedMilestones} remaining
             </p>
           </div>
-          <div className="rounded-xl bg-white border border-gray-200 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Progress
-            </p>
-            <p className="mt-1 text-xl font-bold">
-              {milestonePercent}<span className="text-sm font-normal text-gray-600">%</span>
-            </p>
-            <div className="mt-2 h-1.5 w-full rounded-full bg-gray-100">
+          <div className="bg-card border border-border/60 rounded-3xl p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-full bg-chart-2/10 text-chart-2 flex items-center justify-center">
+                📊
+              </div>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                Progress
+              </span>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-heading font-bold">{milestonePercent}</span>
+              <span className="text-muted-foreground text-lg">%</span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-1.5 mt-2 overflow-hidden">
               <div
-                className="h-1.5 rounded-full transition-all"
-                style={{ width: `${milestonePercent}%`, backgroundColor: goal.color }}
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${milestonePercent}%`,
+                  backgroundColor: goal.color,
+                }}
               />
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Milestones */}
-        <div className="mt-8">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Milestones</h2>
-            <span className="text-xs text-gray-600">{milestonePercent}%</span>
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-heading font-bold flex items-center gap-2">
+              Milestones
+              <span className="bg-secondary px-2 py-0.5 rounded text-xs text-muted-foreground font-bold">
+                {milestonePercent}%
+              </span>
+            </h2>
           </div>
           <MilestoneList milestones={milestones} goalColor={goal.color} />
           <AddMilestone goalId={goal.id} nextOrder={milestones.length} />
-        </div>
+        </section>
 
-        {/* Tasks / Systems */}
-        <div className="mt-8">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Systems</h2>
-            <span className="text-xs text-gray-600">{tasks.length} tasks</span>
+        {/* Systems */}
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-heading font-bold">Systems</h2>
           </div>
-          <TaskList tasks={tasks} />
-          <AddTask goalId={goal.id} nextOrder={tasks.length}/>
-        </div>
-      </div>
-    </div>
+          <TaskList tasks={tasks} goalColor={goal.color} />
+          <AddTask goalId={goal.id} nextOrder={tasks.length} />
+        </section>
+      </main>
+    </>
   );
 }
