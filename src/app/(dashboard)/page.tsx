@@ -199,6 +199,19 @@ export default async function DailyView() {
           </div>
         )}
 
+        {/* Motivational Nudge */}
+        {totalCount > 0 && completedCount < totalCount && totalCount - completedCount <= 2 && (
+          <div className="mt-4 rounded-xl bg-black text-white p-3 text-center text-sm font-medium">
+            ✨ {totalCount - completedCount === 1 ? "One more" : "Two more"} for a &quot;Full Day&quot;!
+          </div>
+        )}
+
+        {totalCount > 0 && completedCount === totalCount && (
+          <div className="mt-4 rounded-xl bg-green-50 border border-green-200 text-green-700 p-3 text-center text-sm font-medium">
+            🎉 Full Day! You completed everything.
+          </div>
+        )}
+
         {/* Task List */}
         {totalCount === 0 ? (
           <div className="mt-12 text-center">
