@@ -4,6 +4,7 @@ import { getTaskStreaks } from "@/lib/streaks";
 import { cookies } from "next/headers";
 import SignOutButton from "@/components/ui/SignOutButton";
 import DailyTaskList from "@/components/features/daily/DailyTaskList";
+import { getDailyCompletions } from "@/lib/weekly-stats";
 
 export default async function DailyView() {
   const supabase = await createClient();
@@ -60,6 +61,17 @@ export default async function DailyView() {
     });
   });
   const streaks = await getTaskStreaks(supabase, allRecurringTaskIds, timezone);
+
+  // Get 7-day activity for all tasks
+  const allTaskIds: string[] = [];
+  goals?.forEach((goal) => {
+    goal.tasks?.forEach((task) => {
+      if (task.type === "recurring") {
+        allTaskIds.push(task.id);
+      }
+    });
+  });
+  const dailyActivity = await getDailyCompletions(supabase, allTaskIds, timezone);
 
   // Filter tasks that are due today
   const todaysTasks: {
@@ -141,6 +153,51 @@ export default async function DailyView() {
             <SignOutButton />
           </div>
         </div>
+
+        {/* 7-Day Activity */}
+        {totalCount > 0 && (
+          <div className="mt-6 rounded-xl bg-white border border-gray-200 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Past 7 Days</p>
+              {(() => {
+                const totalCompleted = dailyActivity.reduce((sum, d) => sum + d.count, 0);
+                const totalExpected = dailyActivity.reduce((sum, d) => sum + d.total, 0);
+                const rate = totalExpected > 0 ? Math.round((totalCompleted / totalExpected) * 100) : 0;
+                return (
+                  <span className="text-xs font-bold text-black">{rate}% hit rate</span>
+                );
+              })()}
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              {dailyActivity.map((day) => {
+                const ratio = day.total > 0 ? day.count / day.total : 0;
+                const dayLabel = new Date(day.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" }).charAt(0);
+                return (
+                  <div key={day.date} className="flex flex-col items-center gap-1.5">
+                    <div
+                      className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold"
+                      style={{
+                        backgroundColor: ratio === 0
+                          ? "#f3f4f6"
+                          : ratio < 0.5
+                          ? "#fecaca"
+                          : ratio < 1
+                          ? "#fca5a5"
+                          : "#ef4444",
+                        color: ratio > 0 ? "white" : "#9ca3af",
+                      }}
+                    >
+                      {ratio === 1 ? "✓" : ratio > 0 ? Math.round(ratio * 100) : ""}
+                    </div>
+                    <span className={`text-[10px] font-bold ${day.date === today ? "text-black" : "text-gray-400"}`}>
+                      {dayLabel}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Task List */}
         {totalCount === 0 ? (

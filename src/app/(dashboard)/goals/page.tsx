@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import GoalCard from "@/components/features/goals/GoalCard";
+import { getWeeklyHitRate } from "@/lib/weekly-stats";
 
 export default async function GoalsOverview() {
   const supabase = await createClient();
@@ -11,17 +13,29 @@ export default async function GoalsOverview() {
     redirect("/login");
   }
 
+  const cookieStore = await cookies();
+  const timezone = cookieStore.get("user_timezone")?.value || "America/Chicago";
+
   const { data: goals } = await supabase
     .from("goals")
     .select(`
       *,
       milestones (id, is_completed),
-      tasks (id, type, frequency)
+      tasks (id, type, frequency, scheduled_days)
     `)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
   const activeGoals = goals?.filter((g) => g.status === "active") || [];
+
+  // Calculate weekly hit rate for each goal
+  const goalsWithStats = await Promise.all(
+    activeGoals.map(async (goal) => {
+      const weeklyStats = await getWeeklyHitRate(supabase, goal.tasks || [], timezone);
+      return { ...goal, weeklyStats };
+    })
+  );
+
   const totalMilestones = activeGoals.reduce(
     (sum, g) => sum + (g.milestones?.length || 0), 0
   );
@@ -35,7 +49,7 @@ export default async function GoalsOverview() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">My Goals</h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-700">
               {activeGoals.length} Active · {remainingMilestones} Milestones left
             </p>
           </div>
@@ -49,7 +63,7 @@ export default async function GoalsOverview() {
 
         {activeGoals.length === 0 ? (
           <div className="mt-12 text-center">
-            <p className="text-gray-500">No goals yet.</p>
+            <p className="text-gray-700">No goals yet.</p>
             <Link
               href="/goals/new"
               className="mt-2 inline-block text-sm font-medium text-black hover:underline"
@@ -59,8 +73,8 @@ export default async function GoalsOverview() {
           </div>
         ) : (
           <div className="mt-6 space-y-4">
-            {activeGoals.map((goal) => (
-              <GoalCard key={goal.id} goal={goal} />
+            {goalsWithStats.map((goal) => (
+              <GoalCard key={goal.id} goal={goal} weeklyStats={goal.weeklyStats} />
             ))}
           </div>
         )}
