@@ -14,11 +14,10 @@ export default function BottomNav() {
   return (
     <nav className="fixed bottom-0 w-full bg-white/90 backdrop-blur-lg border-t border-gray-200 z-50">
       <div className="flex justify-between items-center max-w-md mx-auto px-6 py-2 pb-[env(safe-area-inset-bottom)]">
-        {/* Action / Home */}
         <Link
           href="/"
           className={`flex flex-col items-center gap-1 p-2 flex-1 transition-colors ${
-            isActive("/") && !isActive("/goals")
+            isActive("/") && !isActive("/goals") && !isActive("/settings")
               ? "text-black"
               : "text-gray-400 hover:text-gray-600"
           }`}
@@ -27,7 +26,6 @@ export default function BottomNav() {
           <span className="text-[10px] font-bold uppercase tracking-wider">Action</span>
         </Link>
 
-        {/* Create Goal */}
         <div className="flex-1 flex justify-center">
           <Link
             href="/goals/new"
@@ -37,7 +35,6 @@ export default function BottomNav() {
           </Link>
         </div>
 
-        {/* Goals */}
         <Link
           href="/goals"
           className={`flex flex-col items-center gap-1 p-2 flex-1 transition-colors ${

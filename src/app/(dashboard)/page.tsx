@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getTaskStreaks } from "@/lib/streaks";
 import { cookies } from "next/headers";
-import SignOutButton from "@/components/ui/SignOutButton";
 import DailyTaskList from "@/components/features/daily/DailyTaskList";
 import { getDailyCompletions } from "@/lib/weekly-stats";
 import { getWeeklyHitRate } from "@/lib/weekly-stats";
@@ -190,7 +189,7 @@ export default async function DailyView() {
           <div className="text-right">
             <span className="text-2xl font-bold">{completedCount}</span>
             <span className="text-gray-600">/{totalCount}</span>
-            <SignOutButton />
+            <a href="/settings" className="text-xs text-gray-500 hover:text-black">⚙️</a>
           </div>
         </div>
 
