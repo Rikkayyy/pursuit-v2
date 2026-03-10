@@ -6,6 +6,7 @@ import SignOutButton from "@/components/ui/SignOutButton";
 import DailyTaskList from "@/components/features/daily/DailyTaskList";
 import { getDailyCompletions } from "@/lib/weekly-stats";
 import { getWeeklyHitRate } from "@/lib/weekly-stats";
+import AnytimeTask from "@/components/features/daily/AnytimeTask";
 
 export default async function DailyView() {
   const supabase = await createClient();
@@ -128,6 +129,35 @@ export default async function DailyView() {
     });
   });
 
+  // Collect one-time tasks with no due date
+  const anytimeTasks: {
+    task: {
+      id: string;
+      title: string;
+      type: string;
+      frequency: string | null;
+      scheduled_days: number[] | null;
+      due_date: string | null;
+      goal_id: string;
+    };
+    goalTitle: string;
+    goalColor: string;
+    isCompleted: boolean;
+  }[] = [];
+
+  goals?.forEach((goal) => {
+    goal.tasks?.forEach((task) => {
+      if (task.type === "one_time" && !task.due_date) {
+        anytimeTasks.push({
+          task,
+          goalTitle: goal.title,
+          goalColor: goal.color,
+          isCompleted: completedTaskIds.has(task.id),
+        });
+      }
+    });
+  });
+
   const completedCount = todaysTasks.filter((t) => t.isCompleted).length;
   const totalCount = todaysTasks.length;
 
@@ -236,6 +266,19 @@ export default async function DailyView() {
         ) : (
           <div className="mt-8">
             <DailyTaskList tasks={todaysTasks} today={today} goalStats={goalStats} />
+            {/* Anytime Tasks */}
+            {anytimeTasks.length > 0 && (
+              <div className="mt-8">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-3">
+                  Anytime
+                </h2>
+                <div className="space-y-2">
+                  {anytimeTasks.map((item) => (
+                    <AnytimeTask key={item.task.id} item={item} today={today} />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
