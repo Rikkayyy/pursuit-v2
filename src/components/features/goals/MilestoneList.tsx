@@ -76,7 +76,7 @@ export default function MilestoneList({
           )}
           <button
             onClick={() => deleteMilestone(milestone.id)}
-            className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity text-sm"
+            className="text-gray-300 hover:text-red-500 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-sm"
           >
             ✕
           </button>

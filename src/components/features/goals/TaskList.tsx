@@ -46,7 +46,7 @@ export default function TaskList({ tasks }: { tasks: Task[] }) {
             <button
               onClick={() => deleteTask(task.id)}
               disabled={loading === task.id}
-              className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity text-sm"
+              className="text-gray-300 hover:text-red-500 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-sm"
             >
               ✕
             </button>
