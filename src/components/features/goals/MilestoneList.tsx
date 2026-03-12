@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { Icon } from "@iconify/react";
 import type { Milestone } from "@/types";
 
 export default function MilestoneList({
@@ -18,12 +19,10 @@ export default function MilestoneList({
 
   const toggleMilestone = async (milestone: Milestone) => {
     setLoading(milestone.id);
-
     await supabase
       .from("milestones")
       .update({ is_completed: !milestone.is_completed })
       .eq("id", milestone.id);
-
     setLoading(null);
     router.refresh();
   };
@@ -31,54 +30,61 @@ export default function MilestoneList({
   const deleteMilestone = async (id: string) => {
     if (!confirm("Delete this milestone?")) return;
     setLoading(id);
-
     await supabase.from("milestones").delete().eq("id", id);
-
     setLoading(null);
     router.refresh();
   };
 
   if (milestones.length === 0) {
-    return <p className="mt-3 text-sm text-gray-800">No milestones yet.</p>;
+    return <p className="text-sm text-muted-foreground">No milestones yet.</p>;
   }
 
   return (
-    <div className="mt-3 space-y-2">
+    <div className="space-y-3">
       {milestones.map((milestone) => (
         <div
           key={milestone.id}
-          className="flex items-center gap-3 rounded-xl bg-white border border-gray-200 p-3 group"
+          className={`flex items-center gap-4 rounded-2xl p-4 border group transition-colors ${
+            milestone.is_completed
+              ? "border-border/30 bg-secondary/20"
+              : "border-border/60 bg-card shadow-sm active:bg-secondary cursor-pointer"
+          }`}
+          style={{
+            backgroundColor: milestone.is_completed ? `${goalColor}08` : undefined,
+            borderColor: milestone.is_completed ? `${goalColor}20` : undefined,
+          }}
         >
           <button
             onClick={() => toggleMilestone(milestone)}
             disabled={loading === milestone.id}
-            className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all"
+            className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
             style={{
-              borderColor: milestone.is_completed ? goalColor : "#d1d5db",
               backgroundColor: milestone.is_completed ? goalColor : "transparent",
+              border: milestone.is_completed ? "none" : "2px solid var(--muted-foreground)",
+              borderColor: milestone.is_completed ? goalColor : "color-mix(in srgb, var(--muted-foreground) 30%, transparent)",
             }}
           >
             {milestone.is_completed && (
-              <span className="text-white text-xs">✓</span>
+              <Icon icon="solar:check-read-bold" className="text-white text-xs" />
             )}
           </button>
           <span
-            className={`flex-1 text-sm ${
-              milestone.is_completed ? "text-gray-400 line-through" : "text-black"
+            className={`flex-1 font-bold ${
+              milestone.is_completed
+                ? "text-muted-foreground line-through decoration-muted-foreground/30"
+                : "text-foreground"
             }`}
           >
             {milestone.title}
           </span>
           {milestone.due_date && (
-            <span className="text-xs text-gray-600">
-              {new Date(milestone.due_date).toLocaleDateString()}
-            </span>
+            <Icon icon="solar:calendar-linear" className="text-muted-foreground text-sm" />
           )}
           <button
             onClick={() => deleteMilestone(milestone.id)}
-            className="text-gray-300 hover:text-red-500 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-sm"
+            className="text-muted-foreground/30 hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100 transition-all"
           >
-            ✕
+            <Icon icon="solar:trash-bin-trash-linear" className="text-sm" />
           </button>
         </div>
       ))}

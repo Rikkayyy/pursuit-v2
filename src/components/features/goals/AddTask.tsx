@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { Icon } from "@iconify/react";
 
 export default function AddTask({ goalId, nextOrder }: { goalId: string; nextOrder: number }) {
   const [title, setTitle] = useState("");
@@ -31,42 +32,63 @@ export default function AddTask({ goalId, nextOrder }: { goalId: string; nextOrd
   };
 
   return (
-    <form onSubmit={handleAdd} className="mt-3 space-y-2">
-      <div className="flex gap-2">
+    <form onSubmit={handleAdd} className="mt-4 space-y-3">
+      <div className="flex gap-3">
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Add a system..."
-          className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          className="flex-1 bg-secondary/50 h-14 rounded-2xl px-5 font-medium outline-none focus:bg-secondary/70 transition-all"
         />
         <button
           type="submit"
           disabled={loading || !title.trim()}
-          className="rounded-lg bg-black px-3 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+          className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center text-foreground active:bg-primary active:text-white transition-all disabled:opacity-50"
         >
-          Add
+          <Icon icon="hugeicons:add-01" className="text-xl" />
         </button>
       </div>
       <div className="flex gap-2">
-        <select
-          value={type}
-          onChange={(e) => setType(e.target.value as "recurring" | "one_time")}
-          className="rounded-md border border-gray-200 px-2 py-1 text-xs focus:border-black focus:outline-none"
+        <button
+          type="button"
+          onClick={() => setType("recurring")}
+          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+            type === "recurring"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "bg-secondary text-secondary-foreground"
+          }`}
         >
-          <option value="recurring">Recurring</option>
-          <option value="one_time">One-time</option>
-        </select>
+          Recurring
+        </button>
+        <button
+          type="button"
+          onClick={() => setType("one_time")}
+          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+            type === "one_time"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "bg-secondary text-secondary-foreground"
+          }`}
+        >
+          One-time
+        </button>
         {type === "recurring" && (
-          <select
-            value={frequency}
-            onChange={(e) => setFrequency(e.target.value as "daily" | "weekly" | "specific_days")}
-            className="rounded-md border border-gray-200 px-2 py-1 text-xs focus:border-black focus:outline-none"
-          >
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="specific_days">Specific Days</option>
-          </select>
+          <div className="flex gap-2 ml-2">
+            {(["daily", "weekly", "specific_days"] as const).map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setFrequency(f)}
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                  frequency === f
+                    ? "bg-foreground text-background"
+                    : "bg-secondary text-secondary-foreground"
+                }`}
+              >
+                {f === "daily" ? "Daily" : f === "weekly" ? "Weekly" : "Custom"}
+              </button>
+            ))}
+          </div>
         )}
       </div>
     </form>

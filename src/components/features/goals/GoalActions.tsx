@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import type { Goal } from "@/types";
+import { Icon } from "@iconify/react";
 
 export default function GoalActions({ goal }: { goal: Goal }) {
   const [showMenu, setShowMenu] = useState(false);
@@ -68,9 +69,9 @@ export default function GoalActions({ goal }: { goal: Goal }) {
     <div className="relative">
       <button
         onClick={() => setShowMenu(!showMenu)}
-        className="text-gray-600 hover:text-black text-lg"
+        className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground active:scale-90 transition-transform"
       >
-        •••
+        <Icon icon="solar:menu-dots-bold" className="text-xl" />
       </button>
 
       {/* Dropdown Menu */}
@@ -80,13 +81,13 @@ export default function GoalActions({ goal }: { goal: Goal }) {
             className="fixed inset-0 z-40"
             onClick={() => setShowMenu(false)}
           />
-          <div className="absolute right-0 top-8 z-50 w-48 rounded-xl bg-white border border-gray-200 shadow-lg overflow-hidden">
+          <div className="absolute right-0 top-12 z-50 w-48 rounded-2xl bg-card border border-border/60 shadow-xl overflow-hidden">
             <button
               onClick={() => {
                 setShowMenu(false);
                 setShowEdit(true);
               }}
-              className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
+              className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors"
             >
               Edit Goal
             </button>
@@ -104,7 +105,7 @@ export default function GoalActions({ goal }: { goal: Goal }) {
                 setShowMenu(false);
                 handleArchive();
               }}
-              className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
+              className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors"
             >
               Archive
             </button>
