@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Icon } from "@iconify/react";
 import type { Goal, Milestone, Task } from "@/types";
 
 type GoalWithRelations = Goal & {
@@ -11,6 +12,20 @@ type WeeklyStats = {
   completed: number;
   expected: number;
 };
+
+function getGoalIcon(color: string): string {
+  const map: Record<string, string> = {
+    "#EF4444": "solar:fire-bold",
+    "#ff0055": "solar:fire-bold",
+    "#F97316": "solar:star-bold",
+    "#22C55E": "solar:leaf-bold",
+    "#84cc16": "solar:leaf-bold",
+    "#3B82F6": "solar:code-bold",
+    "#8B5CF6": "solar:book-bold",
+    "#171717": "solar:bolt-circle-bold",
+  };
+  return map[color] || "solar:target-bold";
+}
 
 export default function GoalCard({
   goal,
@@ -25,59 +40,102 @@ export default function GoalCard({
     ? Math.round((completedMilestones / totalMilestones) * 100)
     : 0;
 
-  // Generate mini bar chart heights based on hit rate
-  const barCount = 5;
-  const bars = Array.from({ length: barCount }, () =>
-    Math.max(20, Math.min(100, weeklyStats.rate + (Math.random() * 30 - 15)))
+  const icon = getGoalIcon(goal.color);
+
+  const bars = [60, 80, 100, 70, 90].map((base) =>
+    Math.max(20, Math.min(100, weeklyStats.rate > 0 ? base * (weeklyStats.rate / 100) : 10))
   );
 
-  return (
-    <Link href={`/goals/${goal.id}`}>
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 hover:border-gray-300 transition-colors">
-        <div className="space-y-1 mb-6">
-          <div className="flex items-center gap-2">
-            <div
-              className="h-3 w-3 rounded-full"
-              style={{ backgroundColor: goal.color }}
-            />
-            <h3 className="text-lg font-bold">{goal.title}</h3>
+  if (goal.status === "archived") {
+    return (
+      <Link href={`/goals/${goal.id}`} className="block mb-4">
+        <div className="bg-muted/30 border border-border/40 rounded-3xl p-5 shadow-none flex items-center gap-4 group opacity-60">
+          <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground text-xl">
+            <Icon icon="solar:archive-bold" />
           </div>
+          <div className="flex-1">
+            <h2 className="text-lg font-heading font-bold text-muted-foreground">{goal.title}</h2>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              ARCHIVED
+            </p>
+          </div>
+        </div>
+      </Link>
+    );
+  }
+
+  if (goal.status === "completed") {
+    return (
+      <Link href={`/goals/${goal.id}`} className="block mb-4">
+        <div className="bg-chart-3/5 border border-chart-3/20 rounded-3xl p-5 shadow-none flex items-center gap-4 group">
+          <div className="w-12 h-12 rounded-2xl bg-chart-3/10 flex items-center justify-center text-chart-3 text-xl">
+            <Icon icon="solar:check-circle-bold" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-lg font-heading font-bold text-foreground">{goal.title}</h2>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-chart-3">
+              COMPLETED
+            </p>
+          </div>
+        </div>
+      </Link>
+    );
+  }
+
+  return (
+    <Link href={`/goals/${goal.id}`} className="block mb-4">
+      <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm relative overflow-hidden group cursor-pointer active:scale-[0.98] transition-all h-[240px] flex flex-col">
+        {/* Icon top right */}
+        <div className="absolute right-0 top-0 p-4">
+          <div
+            className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"
+            style={{
+              backgroundColor: `${goal.color}15`,
+              color: goal.color,
+            }}
+          >
+            <Icon icon={icon} />
+          </div>
+        </div>
+
+        {/* Title */}
+        <div className="flex-1">
+          <h2 className="text-2xl font-heading font-bold mb-1">{goal.title}</h2>
           {goal.description && (
-            <p className="text-sm text-gray-700 line-clamp-1">{goal.description}</p>
+            <p className="text-muted-foreground text-sm line-clamp-1">{goal.description}</p>
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        {/* Stats */}
+        <div className="grid grid-cols-2 gap-4">
           {/* Milestones */}
-          <div className="rounded-xl bg-gray-50 p-3">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-700">
+          <div className="bg-secondary/40 rounded-2xl p-4">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
               Milestones
-            </p>
-            <div className="flex items-baseline gap-1 mt-1">
+            </span>
+            <div className="flex items-baseline gap-1">
               <span className="text-xl font-bold">{completedMilestones}</span>
-              <span className="text-sm text-gray-700">/ {totalMilestones}</span>
+              <span className="text-muted-foreground text-sm">/ {totalMilestones}</span>
             </div>
-            {totalMilestones > 0 && (
-              <div className="h-1.5 w-full rounded-full bg-gray-200 mt-2">
-                <div
-                  className="h-1.5 rounded-full transition-all"
-                  style={{
-                    width: `${milestoneProgress}%`,
-                    backgroundColor: goal.color,
-                  }}
-                />
-              </div>
-            )}
+            <div className="w-full bg-muted rounded-full h-1.5 mt-2 overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${milestoneProgress}%`,
+                  backgroundColor: goal.color,
+                }}
+              />
+            </div>
           </div>
 
           {/* Weekly Hit Rate */}
-          <div className="rounded-xl bg-gray-50 p-3">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-700">
+          <div className="bg-secondary/40 rounded-2xl p-4">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
               Weekly Hit Rate
-            </p>
-            <div className="flex items-baseline gap-1 mt-1">
+            </span>
+            <div className="flex items-baseline gap-1">
               <span className="text-xl font-bold">{weeklyStats.rate}</span>
-              <span className="text-sm text-gray-700">%</span>
+              <span className="text-muted-foreground text-sm">%</span>
             </div>
             <div className="flex items-end gap-1 h-4 mt-2">
               {bars.map((height, i) => (
