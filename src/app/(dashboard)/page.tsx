@@ -180,7 +180,7 @@ export default async function DailyView({
             <p className="text-sm text-gray-800">
               {greeting} · {new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
             </p>
-            <h1 className="text-2xl font-bold">
+            <h1 className="text-2xl font-bold text-gray-800">
               {completedCount === totalCount && totalCount > 0
                 ? isToday ? "All done today! 🎉" : "All done that day! 🎉"
                 : "You're in motion"}
@@ -194,7 +194,7 @@ export default async function DailyView({
             </p>
           </div>
           <div className="text-right">
-            <span className="text-2xl font-bold">{completedCount}</span>
+            <span className="text-2xl font-bold text-gray-700">{completedCount}</span>
             <span className="text-gray-700">/{totalCount}</span>
             <a href="/settings" className="text-xs text-gray-700 hover:text-black">⚙️</a>
           </div>

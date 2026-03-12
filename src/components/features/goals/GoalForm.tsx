@@ -160,7 +160,7 @@ export default function GoalForm() {
           onChange={(e) => setTitle(e.target.value)}
           required
           placeholder="e.g., Master Spanish, Build an App"
-          className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
         />
       </div>
 
@@ -174,7 +174,7 @@ export default function GoalForm() {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="The why behind this goal..."
           rows={2}
-          className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black resize-none"
+          className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black resize-none"
         />
       </div>
 
@@ -227,7 +227,7 @@ export default function GoalForm() {
                   value={task.title}
                   onChange={(e) => updateTask(index, "title", e.target.value)}
                   placeholder="Task name (e.g., Study 30 mins)"
-                  className="flex-1 rounded-md border border-gray-200 px-2 py-1.5 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                  className="flex-1 rounded-md border border-gray-200 px-2 py-1.5 text-sm placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
                 />
                 {tasks.length > 1 && (
                   <button
@@ -243,7 +243,7 @@ export default function GoalForm() {
                 <select
                   value={task.type}
                   onChange={(e) => updateTask(index, "type", e.target.value)}
-                  className="rounded-md border border-gray-200 px-2 py-1 text-xs focus:border-black focus:outline-none"
+                  className="rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-800 focus:border-black focus:outline-none"
                 >
                   <option value="recurring">Recurring</option>
                   <option value="one_time">One-time</option>
@@ -252,7 +252,7 @@ export default function GoalForm() {
                   <select
                     value={task.frequency}
                     onChange={(e) => updateTask(index, "frequency", e.target.value)}
-                    className="rounded-md border border-gray-200 px-2 py-1 text-xs focus:border-black focus:outline-none"
+                    className="rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-800 focus:border-black focus:outline-none"
                   >
                     <option value="daily">Daily</option>
                     <option value="weekly">Weekly</option>
@@ -291,7 +291,7 @@ export default function GoalForm() {
                   value={milestone.title}
                   onChange={(e) => updateMilestone(index, e.target.value)}
                   placeholder="e.g., Complete 50 kanji"
-                  className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                  className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
                 />
                 <button
                   type="button"
