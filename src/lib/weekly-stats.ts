@@ -92,13 +92,15 @@ export async function getDailyCompletions(
   supabase: SupabaseClient,
   taskIds: string[],
   timezone: string = "America/Chicago"
-): Promise<{ date: string; count: number; total: number }[]> {
+): Promise<{ date: string; count: number; total: number; isFuture: boolean }[]> {
   const days = getCurrentWeekDays(timezone);
+  const now = new Date();
+  const todayStr = now.toLocaleDateString("en-CA", { timeZone: timezone });
   const startDate = days[0];
-  const endDate = days[days.length - 1];
+  const endDate = todayStr; // Only fetch up to today
 
   if (taskIds.length === 0) {
-    return days.map((d) => ({ date: d, count: 0, total: 0 }));
+    return days.map((d) => ({ date: d, count: 0, total: 0, isFuture: d > todayStr }));
   }
 
   const { data: logs } = await supabase
@@ -109,11 +111,16 @@ export async function getDailyCompletions(
     .lte("date", endDate);
 
   return days.map((date) => {
+    const isFuture = date > todayStr;
+    if (isFuture) {
+      return { date, count: 0, total: 0, isFuture: true };
+    }
     const dayLogs = logs?.filter((l) => l.date === date) || [];
     return {
       date,
       count: dayLogs.length,
       total: taskIds.length,
+      isFuture: false,
     };
   });
 }

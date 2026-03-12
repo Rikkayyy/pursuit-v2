@@ -262,30 +262,29 @@ export default async function DailyView({
                 );
               })()}
             </div>
-            <div className="flex justify-between items-end gap-1.5 h-12">
+            <div className="flex justify-between items-end gap-1.5 h-14 pt-2">
               {dailyActivity.map((day) => {
                 const ratio = day.total > 0 ? day.count / day.total : 0;
                 const dayLabel = new Date(day.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" }).charAt(0);
                 const isCurrentDay = day.date === selectedDate;
-                const isFutureDay = day.date > today;
-                const heightPercent = ratio === 0 ? 15 : Math.max(30, Math.round(ratio * 100));
+                const heightPx = day.isFuture ? 4 : ratio === 0 ? 10 : Math.max(20, Math.round(ratio * 48));
                 return (
-                  <div key={day.date} className="flex-1 group relative">
-                    <div
-                      className={`w-full rounded-full transition-all group-hover:scale-105 ${
-                        isFutureDay
-                          ? "bg-primary/30 animate-pulse border-2 border-primary/20"
-                          : ratio === 0
-                          ? "bg-secondary"
-                          : ratio < 0.5
-                          ? "bg-primary/40 border border-primary/20"
-                          : ratio < 1
-                          ? "bg-primary/60"
-                          : "bg-primary shadow-[0_0_10px_rgba(255,0,85,0.3)]"
-                      }`}
-                      style={{ height: `${heightPercent}%` }}
-                    />
-                    <span className={`absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-bold ${
+                  <div key={day.date} className="flex-1 group flex flex-col items-center">
+                    <div className="h-12 flex items-end w-full justify-center">
+                      <div
+                        className="w-full max-w-[14px] rounded-lg transition-all group-hover:scale-110"
+                        style={{
+                          height: `${heightPx}px`,
+                          backgroundColor: day.isFuture
+                            ? "#e5e7eb"
+                            : ratio === 0
+                            ? "#d1d5db"
+                            : "#ff0055",
+                          opacity: day.isFuture ? 0.3 : ratio === 0 ? 1 : 0.3 + ratio * 0.7,
+                        }}
+                      />
+                    </div>
+                    <span className={`text-[10px] font-bold mt-1.5 ${
                       isCurrentDay ? "text-primary underline underline-offset-2" : "text-muted-foreground"
                     }`}>
                       {dayLabel}
