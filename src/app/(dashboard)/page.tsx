@@ -7,6 +7,7 @@ import { getDailyCompletions } from "@/lib/weekly-stats";
 import { getWeeklyHitRate } from "@/lib/weekly-stats";
 import AnytimeTask from "@/components/features/daily/AnytimeTask";
 import DateSelector from "@/components/ui/DateSelector";
+import { Icon } from "@iconify/react";
 
 export default async function DailyView({
     searchParams,
@@ -173,21 +174,21 @@ export default async function DailyView({
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-32 font-sans selection:bg-primary/20">
-      {/* Header */}
       <header className="px-6 pt-12 pb-8 bg-gradient-to-b from-primary/5 to-transparent relative overflow-hidden">
         <div className="flex items-center justify-between relative z-10">
           <div className="space-y-1">
             <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              <Icon icon="solar:sun-2-bold" className="text-chart-2" />
               {greeting}
             </h2>
             <h1 className="text-3xl font-heading font-extrabold text-foreground tracking-tight">
               {completedCount === totalCount && totalCount > 0
-                ? isToday ? "All done today! 🎉" : "All done that day! 🎉"
+                ? isToday ? "All done today!" : "All done that day!"
                 : "You're in motion"}
             </h1>
             <p className="text-sm text-muted-foreground/80 font-medium">
               {completedCount === 0 && totalCount > 0
-                ? "Let's get started — that counts."
+                ? "You showed up today — that counts."
                 : completedCount === totalCount && totalCount > 0
                 ? "Every task completed. Great work."
                 : `${completedCount} of ${totalCount} done${isToday ? " — keep going." : "."}`}
@@ -195,38 +196,43 @@ export default async function DailyView({
           </div>
           <div className="flex items-center gap-3">
             <div className="relative flex items-center justify-center">
-              <svg className="w-16 h-16 transform -rotate-90">
+              <div className="absolute inset-0 bg-primary/25 blur-2xl rounded-full scale-110 animate-pulse" />
+              <svg className="w-20 h-20 transform -rotate-90 relative z-10">
                 <circle
-                  r={28}
-                  cx={32}
-                  cy={32}
+                  r={34}
+                  cx={40}
+                  cy={40}
                   fill="transparent"
                   stroke="currentColor"
                   className="text-secondary"
-                  strokeWidth={5}
+                  strokeWidth={6}
                 />
                 <circle
-                  r={28}
-                  cx={32}
-                  cy={32}
+                  r={34}
+                  cx={40}
+                  cy={40}
                   fill="transparent"
                   stroke="currentColor"
-                  className="text-primary transition-all duration-1000"
-                  strokeWidth={5}
+                  className="text-primary drop-shadow-[0_0_8px_rgba(255,0,85,0.6)] transition-all duration-1000"
+                  strokeWidth={6}
                   strokeLinecap="round"
-                  strokeDasharray={175.9}
-                  strokeDashoffset={totalCount > 0 ? 175.9 - (completedCount / totalCount) * 175.9 : 175.9}
+                  strokeDasharray={213.6}
+                  strokeDashoffset={totalCount > 0 ? 213.6 - (completedCount / totalCount) * 213.6 : 213.6}
                 />
               </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="flex items-baseline gap-0.5">
-                  <span className="text-lg font-heading font-black text-foreground">{completedCount}</span>
-                  <span className="text-xs font-bold text-muted-foreground/60">/{totalCount}</span>
+              <div className="absolute inset-0 flex items-center justify-center flex-col leading-none">
+                <div className="flex items-baseline gap-0.5 relative z-20">
+                  <span className="text-2xl font-heading font-black text-foreground">{completedCount}</span>
+                  <span className="text-sm font-bold text-muted-foreground/60">/{totalCount}</span>
                 </div>
+                <Icon
+                  icon="solar:bolt-circle-bold"
+                  className="text-primary text-[10px] mt-0.5 opacity-80"
+                />
               </div>
             </div>
             <a href="/settings" className="text-muted-foreground hover:text-foreground transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              <Icon icon="solar:settings-linear" className="text-xl" />
             </a>
           </div>
         </div>
@@ -256,29 +262,31 @@ export default async function DailyView({
                 );
               })()}
             </div>
-            <div className="flex justify-between items-end gap-1.5">
+            <div className="flex justify-between items-end gap-1.5 h-12">
               {dailyActivity.map((day) => {
                 const ratio = day.total > 0 ? day.count / day.total : 0;
                 const dayLabel = new Date(day.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" }).charAt(0);
                 const isCurrentDay = day.date === selectedDate;
-                const height = ratio === 0 ? "h-3" : ratio < 0.25 ? "h-4" : ratio < 0.5 ? "h-6" : ratio < 0.75 ? "h-8" : ratio < 1 ? "h-10" : "h-12";
+                const isFutureDay = day.date > today;
+                const heightPercent = ratio === 0 ? 15 : Math.max(30, Math.round(ratio * 100));
                 return (
-                  <div key={day.date} className="flex-1 group relative flex flex-col items-center">
-                    <div className="h-12 flex items-end w-full justify-center">
-                      <div
-                        className={`w-full max-w-[12px] rounded-full transition-all group-hover:scale-110 ${height} ${
-                          ratio === 0
-                            ? "bg-secondary"
-                            : ratio < 0.5
-                            ? "bg-primary/30 border border-primary/20"
-                            : ratio < 1
-                            ? "bg-primary/60"
-                            : "bg-primary shadow-[0_0_10px_rgba(255,0,85,0.3)]"
-                        }`}
-                      />
-                    </div>
-                    <span className={`text-[10px] font-bold mt-1.5 ${
-                      isCurrentDay ? "text-primary" : "text-muted-foreground"
+                  <div key={day.date} className="flex-1 group relative">
+                    <div
+                      className={`w-full rounded-full transition-all group-hover:scale-105 ${
+                        isFutureDay
+                          ? "bg-primary/30 animate-pulse border-2 border-primary/20"
+                          : ratio === 0
+                          ? "bg-secondary"
+                          : ratio < 0.5
+                          ? "bg-primary/40 border border-primary/20"
+                          : ratio < 1
+                          ? "bg-primary/60"
+                          : "bg-primary shadow-[0_0_10px_rgba(255,0,85,0.3)]"
+                      }`}
+                      style={{ height: `${heightPercent}%` }}
+                    />
+                    <span className={`absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-bold ${
+                      isCurrentDay ? "text-primary underline underline-offset-2" : "text-muted-foreground"
                     }`}>
                       {dayLabel}
                     </span>
@@ -290,30 +298,12 @@ export default async function DailyView({
         </section>
       )}
 
-      {/* Motivational Nudge */}
-      {totalCount > 0 && completedCount < totalCount && totalCount - completedCount <= 2 && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-xs text-center z-40">
-          <div className="bg-foreground text-background px-4 py-2 rounded-full shadow-xl text-xs font-bold flex items-center justify-center gap-2">
-            ✨ {totalCount - completedCount === 1 ? "One more" : "Two more"} for a &quot;Full Day&quot;!
-          </div>
-        </div>
-      )}
-
-      {totalCount > 0 && completedCount === totalCount && (
-        <div className="px-6 mb-6">
-          <div className="bg-chart-3/10 border border-chart-3/20 text-chart-3 p-3 rounded-2xl text-center text-sm font-bold">
-            🎉 Full Day! You completed everything.
-          </div>
-        </div>
-      )}
-
       {/* Task List */}
       <main className="px-6 space-y-8">
         {totalCount === 0 ? (
           <div className="mt-12 text-center">
             <p className="text-muted-foreground">No tasks scheduled for today.</p>
-            
-              <a
+            <a
               href="/goals/new"
               className="mt-2 inline-block text-sm font-bold text-primary hover:underline"
             >
@@ -323,7 +313,6 @@ export default async function DailyView({
         ) : (
           <>
             <DailyTaskList tasks={todaysTasks} today={selectedDate} goalStats={goalStats} />
-            {/* Anytime Tasks */}
             {anytimeTasks.length > 0 && (
               <section>
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
@@ -339,6 +328,24 @@ export default async function DailyView({
           </>
         )}
       </main>
+
+      {/* Motivational Nudge */}
+      {totalCount > 0 && completedCount < totalCount && totalCount - completedCount <= 2 && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-xs text-center z-40">
+          <div className="bg-foreground text-background px-4 py-2 rounded-full shadow-xl text-xs font-bold animate-bounce flex items-center justify-center gap-2">
+            <Icon icon="fluent-emoji:sparkles" className="text-base" />
+            {totalCount - completedCount === 1 ? "One more" : "Two more"} for a &quot;Full Day&quot;!
+          </div>
+        </div>
+      )}
+
+      {totalCount > 0 && completedCount === totalCount && (
+        <div className="px-6 mt-6">
+          <div className="bg-chart-3/10 border border-chart-3/20 text-chart-3 p-3 rounded-2xl text-center text-sm font-bold">
+            🎉 Full Day! You completed everything.
+          </div>
+        </div>
+      )}
     </div>
   );
 }

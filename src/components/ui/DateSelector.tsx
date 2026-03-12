@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Icon } from "@iconify/react";
 
 export default function DateSelector({
   currentDate,
@@ -35,9 +36,9 @@ export default function DateSelector({
     <div className="flex items-center gap-3">
       <button
         onClick={() => goToDate(-1)}
-        className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground hover:bg-secondary/80 active:scale-90 transition-all"
+        className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground active:scale-90 transition-transform"
       >
-        ←
+        <Icon icon="solar:arrow-left-linear" className="text-xl" />
       </button>
 
       <div className="flex-1 text-center">
@@ -57,13 +58,13 @@ export default function DateSelector({
       <button
         onClick={() => goToDate(1)}
         disabled={isFuture}
-        className={`w-10 h-10 rounded-full bg-secondary flex items-center justify-center transition-all active:scale-90 ${
+        className={`w-10 h-10 rounded-full bg-secondary flex items-center justify-center active:scale-90 transition-transform ${
           isFuture
             ? "text-muted-foreground/30 cursor-not-allowed"
-            : "text-foreground hover:bg-secondary/80"
+            : "text-foreground"
         }`}
       >
-        →
+        <Icon icon="solar:arrow-right-linear" className="text-xl" />
       </button>
     </div>
   );
