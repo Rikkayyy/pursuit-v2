@@ -22,7 +22,7 @@ function getConsistencyLabel(rate: number): { text: string; color: string; bg: s
   if (rate >= 70) return { text: `${rate}% THIS WEEK`, color: "#ea580c", bg: "#fff7ed" };
   if (rate >= 40) return { text: `${rate}% THIS WEEK`, color: "#d97706", bg: "#fffbeb" };
   if (rate > 0) return { text: `${rate}% THIS WEEK`, color: "#dc2626", bg: "#fef2f2" };
-  return { text: "NOT STARTED", color: "#4b5563", bg: "#f3f4f6" };
+  return { text: "NOT STARTED", color: "#9ca3af", bg: "#f3f4f6" };
 }
 
 export default function DailyTaskList({
@@ -79,80 +79,104 @@ export default function DailyTaskList({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {Object.entries(grouped).map(([goalId, group]) => {
         const stats = goalStats[group.goalId];
         const label = stats ? getConsistencyLabel(stats.rate) : null;
 
         return (
-          <div key={goalId}>
-            <div className="flex items-center gap-2 mb-2">
-              <div
-                className="h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: group.goalColor }}
-              />
-              <h3 className="text-sm font-semibold text-gray-900">{group.goalTitle}</h3>
+          <section key={goalId}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{
+                    backgroundColor: group.goalColor,
+                    boxShadow: `0 0 8px ${group.goalColor}66`,
+                  }}
+                />
+                <h3 className="font-heading font-bold text-lg text-foreground">{group.goalTitle}</h3>
+              </div>
               {label && (
                 <span
-                  className="ml-auto text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5"
+                  className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter"
                   style={{ color: label.color, backgroundColor: label.bg }}
                 >
                   {label.text}
                 </span>
               )}
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {group.tasks.map((item) => (
                 <div
                   key={item.task.id}
-                  className={`flex items-center gap-3 rounded-xl border p-3 transition-all ${
+                  className={`bg-card border rounded-2xl p-4 flex items-center gap-4 transition-all relative overflow-hidden group ${
                     item.isCompleted
-                      ? "bg-gray-50 border-gray-100"
-                      : "bg-white border-gray-200"
+                      ? "border-border/30 opacity-80 grayscale-[0.3]"
+                      : "border-border/50 shadow-sm hover:shadow-md active:scale-[0.98] cursor-pointer"
                   }`}
                 >
+                  {/* Left accent bar */}
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl"
+                    style={{
+                      backgroundColor: item.isCompleted ? `${item.goalColor}66` : item.goalColor,
+                    }}
+                  />
+
+                  {/* Checkbox */}
                   <button
                     onClick={() => toggleTask(item)}
                     disabled={loadingId === item.task.id}
-                    className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all"
+                    className="w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all"
                     style={{
-                      borderColor: item.isCompleted ? item.goalColor : "#d1d5db",
+                      borderColor: item.isCompleted ? item.goalColor : "var(--muted-foreground)",
                       backgroundColor: item.isCompleted ? item.goalColor : "transparent",
+                      boxShadow: item.isCompleted ? `0 0 12px ${item.goalColor}66` : "none",
                     }}
                   >
                     {item.isCompleted && (
-                      <span className="text-white text-xs">✓</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
                     )}
                   </button>
+
+                  {/* Content */}
                   <div className="flex-1">
-                    <span
-                      className={`text-sm ${
-                        item.isCompleted ? "text-gray-400 line-through" : "text-black"
+                    <h4
+                      className={`font-bold text-base leading-tight ${
+                        item.isCompleted
+                          ? "text-muted-foreground line-through decoration-muted-foreground/40"
+                          : "text-foreground"
                       }`}
                     >
                       {item.task.title}
-                    </span>
-                    {item.streak > 0 && (
-                      <span
-                        className="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold"
-                        style={{
-                          backgroundColor: item.goalColor + "15",
-                          color: item.goalColor,
-                        }}
-                      >
-                        🔥 {item.streak} day{item.streak !== 1 ? "s" : ""}
-                      </span>
-                    )}
+                    </h4>
+                    <div className="flex items-center gap-2 mt-2">
+                      {item.streak > 0 && (
+                        <span
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider"
+                          style={{
+                            backgroundColor: item.isCompleted ? `${item.goalColor}15` : `var(--chart-2)`,
+                            color: item.isCompleted ? item.goalColor : "white",
+                            boxShadow: item.isCompleted ? "none" : "0 4px 12px rgba(249, 115, 22, 0.3)",
+                          }}
+                        >
+                          🔥 {item.streak} Day{item.streak !== 1 ? "s" : ""}
+                        </span>
+                      )}
+                      {item.task.type === "one_time" && (
+                        <span className="flex items-center gap-1 bg-chart-4/10 text-chart-4 px-2 py-0.5 rounded-full text-[10px] font-bold border border-chart-4/20">
+                          One-time Task
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  {item.task.type === "one_time" && (
-                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">
-                      One-time
-                    </span>
-                  )}
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         );
       })}
     </div>

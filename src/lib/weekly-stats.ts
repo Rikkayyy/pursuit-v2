@@ -28,14 +28,21 @@ function getExpectedCompletions(task: TaskForStats, dates: string[]): number {
   return 0;
 }
 
-function getLast7Days(timezone: string): string[] {
+function getCurrentWeekDays(timezone: string): string[] {
   const days: string[] = [];
   const now = new Date();
+  const todayStr = now.toLocaleDateString("en-CA", { timeZone: timezone });
+  const today = new Date(todayStr + "T12:00:00");
+  const dayOfWeek = today.getDay(); // 0 = Sunday
 
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    days.push(d.toLocaleDateString("en-CA", { timeZone: timezone }));
+  // Go back to Sunday
+  const sunday = new Date(today);
+  sunday.setDate(sunday.getDate() - dayOfWeek);
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(sunday);
+    d.setDate(d.getDate() + i);
+    days.push(d.toISOString().split("T")[0]);
   }
 
   return days;
@@ -46,7 +53,7 @@ export async function getWeeklyHitRate(
   tasks: TaskForStats[],
   timezone: string = "America/Chicago"
 ): Promise<{ rate: number; completed: number; expected: number }> {
-  const days = getLast7Days(timezone);
+  const days = getCurrentWeekDays(timezone);
   const startDate = days[0];
   const endDate = days[days.length - 1];
 
@@ -86,7 +93,7 @@ export async function getDailyCompletions(
   taskIds: string[],
   timezone: string = "America/Chicago"
 ): Promise<{ date: string; count: number; total: number }[]> {
-  const days = getLast7Days(timezone);
+  const days = getCurrentWeekDays(timezone);
   const startDate = days[0];
   const endDate = days[days.length - 1];
 

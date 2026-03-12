@@ -172,75 +172,114 @@ export default async function DailyView({
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="mx-auto max-w-lg">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-800">
-              {greeting} · {new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-            </p>
-            <h1 className="text-2xl font-bold text-gray-800">
+    <div className="min-h-screen bg-background text-foreground pb-32 font-sans selection:bg-primary/20">
+      {/* Header */}
+      <header className="px-6 pt-12 pb-8 bg-gradient-to-b from-primary/5 to-transparent relative overflow-hidden">
+        <div className="flex items-center justify-between relative z-10">
+          <div className="space-y-1">
+            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              {greeting}
+            </h2>
+            <h1 className="text-3xl font-heading font-extrabold text-foreground tracking-tight">
               {completedCount === totalCount && totalCount > 0
                 ? isToday ? "All done today! 🎉" : "All done that day! 🎉"
                 : "You're in motion"}
             </h1>
-            <p className="text-sm text-gray-800 mt-0.5">
+            <p className="text-sm text-muted-foreground/80 font-medium">
               {completedCount === 0 && totalCount > 0
                 ? "Let's get started — that counts."
                 : completedCount === totalCount && totalCount > 0
                 ? "Every task completed. Great work."
-                : `${completedCount} of ${totalCount} done — keep going.`}
+                : `${completedCount} of ${totalCount} done${isToday ? " — keep going." : "."}`}
             </p>
           </div>
-          <div className="text-right">
-            <span className="text-2xl font-bold text-gray-700">{completedCount}</span>
-            <span className="text-gray-700">/{totalCount}</span>
-            <a href="/settings" className="text-xs text-gray-700 hover:text-black">⚙️</a>
+          <div className="flex items-center gap-3">
+            <div className="relative flex items-center justify-center">
+              <svg className="w-16 h-16 transform -rotate-90">
+                <circle
+                  r={28}
+                  cx={32}
+                  cy={32}
+                  fill="transparent"
+                  stroke="currentColor"
+                  className="text-secondary"
+                  strokeWidth={5}
+                />
+                <circle
+                  r={28}
+                  cx={32}
+                  cy={32}
+                  fill="transparent"
+                  stroke="currentColor"
+                  className="text-primary transition-all duration-1000"
+                  strokeWidth={5}
+                  strokeLinecap="round"
+                  strokeDasharray={175.9}
+                  strokeDashoffset={totalCount > 0 ? 175.9 - (completedCount / totalCount) * 175.9 : 175.9}
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex items-baseline gap-0.5">
+                  <span className="text-lg font-heading font-black text-foreground">{completedCount}</span>
+                  <span className="text-xs font-bold text-muted-foreground/60">/{totalCount}</span>
+                </div>
+              </div>
+            </div>
+            <a href="/settings" className="text-muted-foreground hover:text-foreground transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </a>
           </div>
         </div>
+      </header>
 
-        {/* Date Selector */}
-        <div className="mt-4">
-          <DateSelector currentDate={selectedDate} today={today} />
-        </div>
+      {/* Date Selector */}
+      <div className="px-6 mb-6">
+        <DateSelector currentDate={selectedDate} today={today} />
+      </div>
 
-        {/* 7-Day Activity */}
-        {totalCount > 0 && (
-          <div className="mt-6 rounded-xl bg-white border border-gray-200 p-4">
+      {/* 7-Day Activity */}
+      {totalCount > 0 && (
+        <section className="px-6 mb-8">
+          <div className="bg-card border border-border/50 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-700">Past 7 Days</p>
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Past 7 Days
+              </h3>
               {(() => {
                 const totalCompleted = dailyActivity.reduce((sum, d) => sum + d.count, 0);
                 const totalExpected = dailyActivity.reduce((sum, d) => sum + d.total, 0);
                 const rate = totalExpected > 0 ? Math.round((totalCompleted / totalExpected) * 100) : 0;
                 return (
-                  <span className="text-xs font-bold text-black">{rate}% hit rate</span>
+                  <span className="text-xs font-bold text-primary px-2 py-0.5 bg-primary/10 rounded-full">
+                    {rate}% hit rate
+                  </span>
                 );
               })()}
             </div>
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex justify-between items-end gap-1.5">
               {dailyActivity.map((day) => {
                 const ratio = day.total > 0 ? day.count / day.total : 0;
                 const dayLabel = new Date(day.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" }).charAt(0);
+                const isCurrentDay = day.date === selectedDate;
+                const height = ratio === 0 ? "h-3" : ratio < 0.25 ? "h-4" : ratio < 0.5 ? "h-6" : ratio < 0.75 ? "h-8" : ratio < 1 ? "h-10" : "h-12";
                 return (
-                  <div key={day.date} className="flex flex-col items-center gap-1.5">
-                    <div
-                      className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold"
-                      style={{
-                        backgroundColor: ratio === 0
-                          ? "#f3f4f6"
-                          : ratio < 0.5
-                          ? "#fecaca"
-                          : ratio < 1
-                          ? "#fca5a5"
-                          : "#ef4444",
-                        color: ratio > 0 ? "white" : "#4b5563",
-                      }}
-                    >
-                      {ratio === 1 ? "✓" : ratio > 0 ? Math.round(ratio * 100) : ""}
+                  <div key={day.date} className="flex-1 group relative flex flex-col items-center">
+                    <div className="h-12 flex items-end w-full justify-center">
+                      <div
+                        className={`w-full max-w-[12px] rounded-full transition-all group-hover:scale-110 ${height} ${
+                          ratio === 0
+                            ? "bg-secondary"
+                            : ratio < 0.5
+                            ? "bg-primary/30 border border-primary/20"
+                            : ratio < 1
+                            ? "bg-primary/60"
+                            : "bg-primary shadow-[0_0_10px_rgba(255,0,85,0.3)]"
+                        }`}
+                      />
                     </div>
-                    <span className={`text-[10px] font-bold ${day.date === today ? "text-black" : "text-gray-600"}`}>
+                    <span className={`text-[10px] font-bold mt-1.5 ${
+                      isCurrentDay ? "text-primary" : "text-muted-foreground"
+                    }`}>
                       {dayLabel}
                     </span>
                   </div>
@@ -248,51 +287,58 @@ export default async function DailyView({
               })}
             </div>
           </div>
-        )}
+        </section>
+      )}
 
-        {/* Motivational Nudge */}
-        {totalCount > 0 && completedCount < totalCount && totalCount - completedCount <= 2 && (
-          <div className="mt-4 rounded-xl bg-black text-white p-3 text-center text-sm font-medium">
+      {/* Motivational Nudge */}
+      {totalCount > 0 && completedCount < totalCount && totalCount - completedCount <= 2 && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-xs text-center z-40">
+          <div className="bg-foreground text-background px-4 py-2 rounded-full shadow-xl text-xs font-bold flex items-center justify-center gap-2">
             ✨ {totalCount - completedCount === 1 ? "One more" : "Two more"} for a &quot;Full Day&quot;!
           </div>
-        )}
+        </div>
+      )}
 
-        {totalCount > 0 && completedCount === totalCount && (
-          <div className="mt-4 rounded-xl bg-green-50 border border-green-200 text-green-700 p-3 text-center text-sm font-medium">
+      {totalCount > 0 && completedCount === totalCount && (
+        <div className="px-6 mb-6">
+          <div className="bg-chart-3/10 border border-chart-3/20 text-chart-3 p-3 rounded-2xl text-center text-sm font-bold">
             🎉 Full Day! You completed everything.
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Task List */}
+      {/* Task List */}
+      <main className="px-6 space-y-8">
         {totalCount === 0 ? (
           <div className="mt-12 text-center">
-            <p className="text-gray-800">No tasks scheduled for today.</p>
-            <a
+            <p className="text-muted-foreground">No tasks scheduled for today.</p>
+            
+              <a
               href="/goals/new"
-              className="mt-2 inline-block text-sm font-medium text-black hover:underline"
+              className="mt-2 inline-block text-sm font-bold text-primary hover:underline"
             >
               Create a goal to get started
             </a>
           </div>
         ) : (
-          <div className="mt-8">
+          <>
             <DailyTaskList tasks={todaysTasks} today={selectedDate} goalStats={goalStats} />
             {/* Anytime Tasks */}
             {anytimeTasks.length > 0 && (
-              <div className="mt-8">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-gray-700 mb-3">
+              <section>
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
                   Anytime
-                </h2>
-                <div className="space-y-2">
+                </h3>
+                <div className="space-y-3">
                   {anytimeTasks.map((item) => (
                     <AnytimeTask key={item.task.id} item={item} today={selectedDate} />
                   ))}
                 </div>
-              </div>
+              </section>
             )}
-          </div>
+          </>
         )}
-      </div>
+      </main>
     </div>
   );
 }

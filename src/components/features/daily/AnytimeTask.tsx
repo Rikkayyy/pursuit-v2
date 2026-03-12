@@ -50,36 +50,53 @@ export default function AnytimeTask({ item, today }: AnytimeTaskProps) {
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-xl border p-3 transition-all ${
-        item.isCompleted ? "bg-gray-50 border-gray-100" : "bg-white border-gray-200"
+      className={`bg-card border rounded-2xl p-4 flex items-center gap-4 transition-all relative overflow-hidden ${
+        item.isCompleted
+          ? "border-border/30 opacity-80 grayscale-[0.3]"
+          : "border-border/50 shadow-sm hover:shadow-md active:scale-[0.98] cursor-pointer"
       }`}
     >
+      <div
+        className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl"
+        style={{
+          backgroundColor: item.isCompleted ? `${item.goalColor}66` : item.goalColor,
+        }}
+      />
+
       <button
         onClick={toggleTask}
         disabled={loading}
-        className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all"
+        className="w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all"
         style={{
-          borderColor: item.isCompleted ? item.goalColor : "#d1d5db",
+          borderColor: item.isCompleted ? item.goalColor : "var(--muted-foreground)",
           backgroundColor: item.isCompleted ? item.goalColor : "transparent",
         }}
       >
-        {item.isCompleted && <span className="text-white text-xs">✓</span>}
+        {item.isCompleted && (
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        )}
       </button>
+
       <div className="flex-1">
-        <span
-          className={`text-sm ${
-            item.isCompleted ? "text-gray-400 line-through" : "text-black"
+        <h4
+          className={`font-bold text-base leading-tight ${
+            item.isCompleted
+              ? "text-muted-foreground line-through decoration-muted-foreground/40"
+              : "text-foreground"
           }`}
         >
           {item.task.title}
-        </span>
+        </h4>
       </div>
+
       <div className="flex items-center gap-2">
         <div
           className="h-2 w-2 rounded-full"
           style={{ backgroundColor: item.goalColor }}
         />
-        <span className="text-xs text-gray-700">{item.goalTitle}</span>
+        <span className="text-xs text-muted-foreground font-medium">{item.goalTitle}</span>
       </div>
     </div>
   );
