@@ -6,9 +6,14 @@ import DailyTaskList from "@/components/features/daily/DailyTaskList";
 import { getDailyCompletions } from "@/lib/weekly-stats";
 import { getWeeklyHitRate } from "@/lib/weekly-stats";
 import AnytimeTask from "@/components/features/daily/AnytimeTask";
+import DateSelector from "@/components/ui/DateSelector";
 
-export default async function DailyView() {
-  const supabase = await createClient();
+export default async function DailyView({
+    searchParams,
+  }: {
+    searchParams: Promise<{ date?: string }>;
+  }) {
+    const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -19,9 +24,11 @@ export default async function DailyView() {
   const timezone = cookieStore.get("user_timezone")?.value || "America/Chicago";
   const now = new Date();
   const today = now.toLocaleDateString("en-CA", { timeZone: timezone });
-  const dayOfWeek = new Date(
-    now.toLocaleDateString("en-US", { timeZone: timezone })
-  ).getDay();
+
+  const { date: dateParam } = await searchParams;
+  const selectedDate = dateParam || today;
+  const dayOfWeek = new Date(selectedDate + "T12:00:00").getDay();
+  const isToday = selectedDate === today;
 
   // Get all active goals with their tasks and today's logs
   const { data: goals } = await supabase
@@ -48,7 +55,7 @@ export default async function DailyView() {
     .from("task_logs")
     .select("task_id")
     .eq("user_id", user.id)
-    .eq("date", today);
+    .eq("date", selectedDate);
 
   const completedTaskIds = new Set(todayLogs?.map((log) => log.task_id) || []);
 
@@ -113,7 +120,7 @@ export default async function DailyView() {
           isDueToday = task.scheduled_days.includes(dayOfWeek);
         }
       } else if (task.type === "one_time") {
-        isDueToday = task.due_date === today;
+        isDueToday = task.due_date === selectedDate;
       }
 
       if (isDueToday) {
@@ -171,11 +178,11 @@ export default async function DailyView() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-600">
-              {greeting} · {new Date(today + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+              {greeting} · {new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
             </p>
             <h1 className="text-2xl font-bold">
               {completedCount === totalCount && totalCount > 0
-                ? "All done today! 🎉"
+                ? isToday ? "All done today! 🎉" : "All done that day! 🎉"
                 : "You're in motion"}
             </h1>
             <p className="text-sm text-gray-600 mt-0.5">
@@ -191,6 +198,11 @@ export default async function DailyView() {
             <span className="text-gray-600">/{totalCount}</span>
             <a href="/settings" className="text-xs text-gray-500 hover:text-black">⚙️</a>
           </div>
+        </div>
+
+        {/* Date Selector */}
+        <div className="mt-4">
+          <DateSelector currentDate={selectedDate} today={today} />
         </div>
 
         {/* 7-Day Activity */}
