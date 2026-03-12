@@ -19,7 +19,7 @@ export default function BottomNav() {
           className={`flex flex-col items-center gap-1 p-2 flex-1 transition-colors ${
             isActive("/") && !isActive("/goals") && !isActive("/settings")
               ? "text-black"
-              : "text-gray-400 hover:text-gray-600"
+              : "text-gray-500 hover:text-gray-800"
           }`}
         >
           <span className="text-xl">🏠</span>
@@ -40,7 +40,7 @@ export default function BottomNav() {
           className={`flex flex-col items-center gap-1 p-2 flex-1 transition-colors ${
             isActive("/goals")
               ? "text-black"
-              : "text-gray-400 hover:text-gray-600"
+              : "text-gray-500 hover:text-gray-800"
           }`}
         >
           <span className="text-xl">🎯</span>

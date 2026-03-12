@@ -43,19 +43,19 @@ export default function GoalCard({
             <h3 className="text-lg font-bold">{goal.title}</h3>
           </div>
           {goal.description && (
-            <p className="text-sm text-gray-600 line-clamp-1">{goal.description}</p>
+            <p className="text-sm text-gray-700 line-clamp-1">{goal.description}</p>
           )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           {/* Milestones */}
           <div className="rounded-xl bg-gray-50 p-3">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-700">
               Milestones
             </p>
             <div className="flex items-baseline gap-1 mt-1">
               <span className="text-xl font-bold">{completedMilestones}</span>
-              <span className="text-sm text-gray-500">/ {totalMilestones}</span>
+              <span className="text-sm text-gray-700">/ {totalMilestones}</span>
             </div>
             {totalMilestones > 0 && (
               <div className="h-1.5 w-full rounded-full bg-gray-200 mt-2">
@@ -72,12 +72,12 @@ export default function GoalCard({
 
           {/* Weekly Hit Rate */}
           <div className="rounded-xl bg-gray-50 p-3">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-700">
               Weekly Hit Rate
             </p>
             <div className="flex items-baseline gap-1 mt-1">
               <span className="text-xl font-bold">{weeklyStats.rate}</span>
-              <span className="text-sm text-gray-500">%</span>
+              <span className="text-sm text-gray-700">%</span>
             </div>
             <div className="flex items-end gap-1 h-4 mt-2">
               {bars.map((height, i) => (

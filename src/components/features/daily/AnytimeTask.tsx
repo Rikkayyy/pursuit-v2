@@ -79,7 +79,7 @@ export default function AnytimeTask({ item, today }: AnytimeTaskProps) {
           className="h-2 w-2 rounded-full"
           style={{ backgroundColor: item.goalColor }}
         />
-        <span className="text-xs text-gray-500">{item.goalTitle}</span>
+        <span className="text-xs text-gray-700">{item.goalTitle}</span>
       </div>
     </div>
   );

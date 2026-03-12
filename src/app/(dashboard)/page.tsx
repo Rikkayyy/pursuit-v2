@@ -177,7 +177,7 @@ export default async function DailyView({
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-800">
               {greeting} · {new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
             </p>
             <h1 className="text-2xl font-bold">
@@ -185,7 +185,7 @@ export default async function DailyView({
                 ? isToday ? "All done today! 🎉" : "All done that day! 🎉"
                 : "You're in motion"}
             </h1>
-            <p className="text-sm text-gray-600 mt-0.5">
+            <p className="text-sm text-gray-800 mt-0.5">
               {completedCount === 0 && totalCount > 0
                 ? "Let's get started — that counts."
                 : completedCount === totalCount && totalCount > 0
@@ -195,8 +195,8 @@ export default async function DailyView({
           </div>
           <div className="text-right">
             <span className="text-2xl font-bold">{completedCount}</span>
-            <span className="text-gray-600">/{totalCount}</span>
-            <a href="/settings" className="text-xs text-gray-500 hover:text-black">⚙️</a>
+            <span className="text-gray-700">/{totalCount}</span>
+            <a href="/settings" className="text-xs text-gray-700 hover:text-black">⚙️</a>
           </div>
         </div>
 
@@ -209,7 +209,7 @@ export default async function DailyView({
         {totalCount > 0 && (
           <div className="mt-6 rounded-xl bg-white border border-gray-200 p-4">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Past 7 Days</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-700">Past 7 Days</p>
               {(() => {
                 const totalCompleted = dailyActivity.reduce((sum, d) => sum + d.count, 0);
                 const totalExpected = dailyActivity.reduce((sum, d) => sum + d.total, 0);
@@ -235,12 +235,12 @@ export default async function DailyView({
                           : ratio < 1
                           ? "#fca5a5"
                           : "#ef4444",
-                        color: ratio > 0 ? "white" : "#9ca3af",
+                        color: ratio > 0 ? "white" : "#4b5563",
                       }}
                     >
                       {ratio === 1 ? "✓" : ratio > 0 ? Math.round(ratio * 100) : ""}
                     </div>
-                    <span className={`text-[10px] font-bold ${day.date === today ? "text-black" : "text-gray-400"}`}>
+                    <span className={`text-[10px] font-bold ${day.date === today ? "text-black" : "text-gray-600"}`}>
                       {dayLabel}
                     </span>
                   </div>
@@ -266,7 +266,7 @@ export default async function DailyView({
         {/* Task List */}
         {totalCount === 0 ? (
           <div className="mt-12 text-center">
-            <p className="text-gray-600">No tasks scheduled for today.</p>
+            <p className="text-gray-800">No tasks scheduled for today.</p>
             <a
               href="/goals/new"
               className="mt-2 inline-block text-sm font-medium text-black hover:underline"
@@ -276,16 +276,16 @@ export default async function DailyView({
           </div>
         ) : (
           <div className="mt-8">
-            <DailyTaskList tasks={todaysTasks} today={today} goalStats={goalStats} />
+            <DailyTaskList tasks={todaysTasks} today={selectedDate} goalStats={goalStats} />
             {/* Anytime Tasks */}
             {anytimeTasks.length > 0 && (
               <div className="mt-8">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-3">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-gray-700 mb-3">
                   Anytime
                 </h2>
                 <div className="space-y-2">
                   {anytimeTasks.map((item) => (
-                    <AnytimeTask key={item.task.id} item={item} today={today} />
+                    <AnytimeTask key={item.task.id} item={item} today={selectedDate} />
                   ))}
                 </div>
               </div>

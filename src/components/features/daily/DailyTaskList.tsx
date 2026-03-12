@@ -22,7 +22,7 @@ function getConsistencyLabel(rate: number): { text: string; color: string; bg: s
   if (rate >= 70) return { text: `${rate}% THIS WEEK`, color: "#ea580c", bg: "#fff7ed" };
   if (rate >= 40) return { text: `${rate}% THIS WEEK`, color: "#d97706", bg: "#fffbeb" };
   if (rate > 0) return { text: `${rate}% THIS WEEK`, color: "#dc2626", bg: "#fef2f2" };
-  return { text: "NOT STARTED", color: "#9ca3af", bg: "#f3f4f6" };
+  return { text: "NOT STARTED", color: "#4b5563", bg: "#f3f4f6" };
 }
 
 export default function DailyTaskList({
@@ -91,7 +91,7 @@ export default function DailyTaskList({
                 className="h-2.5 w-2.5 rounded-full"
                 style={{ backgroundColor: group.goalColor }}
               />
-              <h3 className="text-sm font-semibold text-gray-700">{group.goalTitle}</h3>
+              <h3 className="text-sm font-semibold text-gray-900">{group.goalTitle}</h3>
               {label && (
                 <span
                   className="ml-auto text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5"
@@ -145,7 +145,7 @@ export default function DailyTaskList({
                     )}
                   </div>
                   {item.task.type === "one_time" && (
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">
                       One-time
                     </span>
                   )}

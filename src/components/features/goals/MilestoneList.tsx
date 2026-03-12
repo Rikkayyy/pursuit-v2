@@ -39,7 +39,7 @@ export default function MilestoneList({
   };
 
   if (milestones.length === 0) {
-    return <p className="mt-3 text-sm text-gray-600">No milestones yet.</p>;
+    return <p className="mt-3 text-sm text-gray-800">No milestones yet.</p>;
   }
 
   return (

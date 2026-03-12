@@ -151,7 +151,7 @@ export default function GoalForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Title */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
+        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-700">
           What do you want to achieve?
         </label>
         <input
@@ -166,7 +166,7 @@ export default function GoalForm() {
 
       {/* Description */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
+        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-700">
           Description (optional)
         </label>
         <textarea
@@ -180,7 +180,7 @@ export default function GoalForm() {
 
       {/* Color Picker */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
+        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-700">
           Pick a theme color
         </label>
         <div className="mt-2 flex gap-3">
@@ -204,7 +204,7 @@ export default function GoalForm() {
       {/* Tasks */}
       <div>
         <div className="flex items-center justify-between">
-          <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <label className="block text-xs font-semibold uppercase tracking-wide text-gray-700">
             Define Your Systems
           </label>
           <button
@@ -215,7 +215,7 @@ export default function GoalForm() {
             + Add
           </button>
         </div>
-        <p className="text-xs text-gray-400 mt-0.5">
+        <p className="text-xs text-gray-600 mt-0.5">
           The recurring tasks that drive you toward your goal every day.
         </p>
         <div className="mt-3 space-y-3">
@@ -268,7 +268,7 @@ export default function GoalForm() {
       {/* Milestones */}
       <div>
         <div className="flex items-center justify-between">
-          <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <label className="block text-xs font-semibold uppercase tracking-wide text-gray-700">
             Define your Plan through milestones
           </label>
           <button
@@ -279,7 +279,7 @@ export default function GoalForm() {
             + Add
           </button>
         </div>
-        <p className="text-xs text-gray-400 mt-0.5">
+        <p className="text-xs text-gray-600 mt-0.5">
           Checkpoints that mark progress toward your goal.
         </p>
         {milestones.length > 0 && (
