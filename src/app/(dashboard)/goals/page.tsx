@@ -58,7 +58,7 @@ export default async function GoalsOverview({
       <div className="mx-auto max-w-lg">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">My Goals</h1>
+            <h1 className="text-2xl font-bold ">My Goals</h1>
             <p className="text-sm text-gray-700">
               {activeCount} Active · {totalRemainingMilestones} Milestones left
             </p>
