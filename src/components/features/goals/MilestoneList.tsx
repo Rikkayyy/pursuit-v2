@@ -60,8 +60,7 @@ export default function MilestoneList({
             className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
             style={{
               backgroundColor: milestone.is_completed ? goalColor : "transparent",
-              border: milestone.is_completed ? "none" : "2px solid var(--muted-foreground)",
-              borderColor: milestone.is_completed ? goalColor : "color-mix(in srgb, var(--muted-foreground) 30%, transparent)",
+              border: milestone.is_completed ? `2px solid ${goalColor}` : "2px solid #9ca3af",
             }}
           >
             {milestone.is_completed && (
