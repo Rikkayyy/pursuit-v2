@@ -88,7 +88,7 @@ export default async function GoalDetail({ params }: { params: Promise<{ id: str
 
         {/* Stats */}
         <section className="grid grid-cols-2 gap-4">
-          <div className="bg-card border border-border/60 rounded-3xl p-5 shadow-sm">
+          <div className="bg-card rounded-3xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.08)]">
             <div className="flex items-center gap-2 mb-4">
               <div
                 className="w-8 h-8 rounded-full flex items-center justify-center"
@@ -106,7 +106,7 @@ export default async function GoalDetail({ params }: { params: Promise<{ id: str
             </div>
             <p className="text-xs text-muted-foreground mt-1">{milestones.length - completedMilestones} remaining</p>
           </div>
-          <div className="bg-card border border-border/60 rounded-3xl p-5 shadow-sm">
+          <div className="bg-card rounded-3xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.08)]">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-full bg-chart-2/10 text-chart-2 flex items-center justify-center">
                 <Icon icon="solar:flame-bold" />
@@ -137,7 +137,7 @@ export default async function GoalDetail({ params }: { params: Promise<{ id: str
                 {milestonePercent}%
               </span>
             </h2>
-            <span className="text-primary font-bold text-xs uppercase tracking-widest">
+            <span className="text-muted-foreground font-bold text-xs uppercase tracking-widest">
               {milestones.length} total
             </span>
           </div>
@@ -149,12 +149,12 @@ export default async function GoalDetail({ params }: { params: Promise<{ id: str
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-heading font-bold">Systems</h2>
-            <span className="text-primary font-bold text-xs uppercase tracking-widest">
+            <span className="text-muted-foreground font-bold text-xs uppercase tracking-widest">
               {tasks.length} tasks
             </span>
           </div>
-          <TaskList tasks={tasks} />
-          <AddTask goalId={goal.id} nextOrder={tasks.length} />
+          <TaskList tasks={tasks} goalColor={goal.color} />
+          <AddTask goalId={goal.id} nextOrder={tasks.length} goalColor={goal.color} />
         </section>
       </main>
     </div>

@@ -44,10 +44,10 @@ export default function MilestoneList({
       {milestones.map((milestone) => (
         <div
           key={milestone.id}
-          className={`flex items-center gap-4 rounded-2xl p-4 border group transition-colors ${
+          className={`flex items-center gap-4 rounded-2xl p-4 group transition-colors ${
             milestone.is_completed
-              ? "border-border/30 bg-secondary/20"
-              : "border-border/60 bg-card shadow-sm active:bg-secondary cursor-pointer"
+              ? "bg-secondary/20"
+              : "bg-card shadow-[0_2px_8px_rgba(0,0,0,0.08)] active:bg-secondary cursor-pointer"
           }`}
           style={{
             backgroundColor: milestone.is_completed ? `${goalColor}08` : undefined,
