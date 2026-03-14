@@ -3,24 +3,33 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Icon } from "@iconify/react";
 
-export default function Login() {
-  const [email, setEmail] = useState("");
+export default function ResetPassword() {
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
+    const { error } = await supabase.auth.updateUser({
       password,
     });
 
@@ -40,44 +49,51 @@ export default function Login() {
             className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl mb-4"
             style={{ backgroundColor: "#ff0055", boxShadow: "0 8px 25px rgba(255, 0, 85, 0.3)" }}
           >
-            <Icon icon="solar:target-bold" />
+            <Icon icon="solar:key-bold" />
           </div>
-          <h1 className="text-2xl font-heading font-extrabold">Welcome back</h1>
-          <p className="text-sm text-muted-foreground">Log in to continue your pursuit</p>
+          <h1 className="text-2xl font-heading font-extrabold">New password</h1>
+          <p className="text-sm text-muted-foreground">Choose a new password for your account</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-2 px-1">
-              Email
+              New Password
             </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full bg-secondary/50 border-2 border-transparent focus:border-primary/30 focus:bg-background h-14 rounded-2xl px-5 font-medium text-base transition-all outline-none"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-2 px-1">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                Password
-              </label>
-              <Link href="/forgot-password" className="text-[10px] font-bold uppercase tracking-widest hover:underline" style={{ color: "#ff0055" }}>
-                Forgot?
-              </Link>
-            </div>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={6}
               className="w-full bg-secondary/50 border-2 border-transparent focus:border-primary/30 focus:bg-background h-14 rounded-2xl px-5 font-medium text-base transition-all outline-none"
-              placeholder="Your password"
+              placeholder="At least 6 characters"
             />
+          </div>
+
+          <div>
+            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-2 px-1">
+              Confirm New Password
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
+              className="w-full bg-secondary/50 border-2 focus:bg-background h-14 rounded-2xl px-5 font-medium text-base transition-all outline-none"
+              style={{
+                borderColor: confirmPassword
+                  ? password !== confirmPassword
+                    ? "#ef4444"
+                    : "#84cc16"
+                  : "transparent",
+              }}
+              placeholder="Re-enter your password"
+            />
+            {confirmPassword && password !== confirmPassword && (
+              <p className="text-xs text-destructive mt-1 px-1 font-medium">Passwords do not match</p>
+            )}
           </div>
 
           {error && (
@@ -95,21 +111,10 @@ export default function Login() {
               boxShadow: "0 8px 25px rgba(255, 0, 85, 0.3)",
             }}
           >
-            {loading ? "Logging in..." : "Log in"}
+            {loading ? "Updating..." : "Set New Password"}
             {!loading && <Icon icon="solar:arrow-right-linear" className="text-lg" />}
           </button>
         </form>
-
-        <p className="text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-bold hover:underline" style={{ color: "#ff0055" }}>
-            Sign up
-          </Link>
-        </p>
-
-        <p className="text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-          GPS Method: Goal • Plan • System
-        </p>
       </div>
     </div>
   );
