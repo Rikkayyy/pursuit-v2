@@ -50,10 +50,10 @@ export default function AnytimeTask({ item, today }: AnytimeTaskProps) {
 
   return (
     <div
-      className={`bg-card border rounded-2xl p-4 flex items-center gap-4 transition-all relative overflow-hidden ${
+      className={`bg-card rounded-2xl p-4 flex items-center gap-4 transition-all relative overflow-hidden ${
         item.isCompleted
-          ? "border-border/30 opacity-80 grayscale-[0.3]"
-          : "border-border/50 shadow-sm hover:shadow-md active:scale-[0.98] cursor-pointer"
+          ? "shadow-none opacity-80 grayscale-[0.3]"
+          : "shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] active:scale-[0.98] cursor-pointer"
       }`}
     >
       <div

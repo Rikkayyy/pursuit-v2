@@ -196,15 +196,16 @@ export default async function DailyView({
           </div>
           <div className="flex items-center gap-3">
             <div className="relative flex items-center justify-center">
-              <div className="absolute inset-0 bg-primary/25 blur-2xl rounded-full scale-110 animate-pulse" />
+              {completedCount > 0 && (
+                <div className="absolute inset-0 rounded-full scale-110" style={{ backgroundColor: "rgba(255, 0, 85, 0.15)", filter: "blur(16px)" }} />
+              )}
               <svg className="w-20 h-20 transform -rotate-90 relative z-10">
                 <circle
                   r={34}
                   cx={40}
                   cy={40}
                   fill="transparent"
-                  stroke="currentColor"
-                  className="text-secondary"
+                  stroke="#f3f4f6"
                   strokeWidth={6}
                 />
                 <circle
@@ -212,12 +213,15 @@ export default async function DailyView({
                   cx={40}
                   cy={40}
                   fill="transparent"
-                  stroke="currentColor"
-                  className="text-primary drop-shadow-[0_0_8px_rgba(255,0,85,0.6)] transition-all duration-1000"
+                  stroke="#ff0055"
                   strokeWidth={6}
                   strokeLinecap="round"
                   strokeDasharray={213.6}
                   strokeDashoffset={totalCount > 0 ? 213.6 - (completedCount / totalCount) * 213.6 : 213.6}
+                  style={{
+                    filter: completedCount > 0 ? "drop-shadow(0 0 8px rgba(255, 0, 85, 0.6))" : "none",
+                    transition: "stroke-dashoffset 1s ease",
+                  }}
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center flex-col leading-none">
@@ -225,10 +229,12 @@ export default async function DailyView({
                   <span className="text-2xl font-heading font-black text-foreground">{completedCount}</span>
                   <span className="text-sm font-bold text-muted-foreground/60">/{totalCount}</span>
                 </div>
-                <Icon
-                  icon="solar:bolt-circle-bold"
-                  className="text-primary text-[10px] mt-0.5 opacity-80"
-                />
+                {completedCount > 0 && (
+                  <Icon
+                    icon="solar:bolt-circle-bold"
+                    style={{ color: "#ff0055", fontSize: "10px", marginTop: "2px", opacity: 0.8 }}
+                  />
+                )}
               </div>
             </div>
             <a href="/settings" className="text-muted-foreground hover:text-foreground transition-colors">
@@ -246,7 +252,7 @@ export default async function DailyView({
       {/* 7-Day Activity */}
       {totalCount > 0 && (
         <section className="px-6 mb-8">
-          <div className="bg-card border border-border/50 rounded-2xl p-4 shadow-sm">
+          <div className="bg-card rounded-2xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)]">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Past 7 Days
@@ -262,31 +268,44 @@ export default async function DailyView({
                 );
               })()}
             </div>
-            <div className="flex justify-between items-end gap-1.5 h-14 pt-2">
+            <div className="flex justify-between items-end gap-2 h-16 pt-2">
               {dailyActivity.map((day) => {
                 const ratio = day.total > 0 ? day.count / day.total : 0;
                 const dayLabel = new Date(day.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" }).charAt(0);
                 const isCurrentDay = day.date === selectedDate;
-                const heightPx = day.isFuture ? 4 : ratio === 0 ? 10 : Math.max(20, Math.round(ratio * 48));
+                const isFuture = day.isFuture;
+                const heightPx = isFuture ? 12 : ratio === 0 ? 8 : Math.max(16, Math.round(ratio * 48));
                 return (
                   <div key={day.date} className="flex-1 group flex flex-col items-center">
-                    <div className="h-12 flex items-end w-full justify-center">
+                    <div className="h-14 flex items-end w-full justify-center">
                       <div
-                        className="w-full max-w-[14px] rounded-lg transition-all group-hover:scale-110"
+                        className="w-11 rounded-full transition-all group-hover:scale-110"
                         style={{
                           height: `${heightPx}px`,
-                          backgroundColor: day.isFuture
+                          backgroundColor: isFuture
                             ? "#e5e7eb"
                             : ratio === 0
-                            ? "#d1d5db"
+                            ? "#e5e7eb"
                             : "#ff0055",
-                          opacity: day.isFuture ? 0.3 : ratio === 0 ? 1 : 0.3 + ratio * 0.7,
+                          opacity: isFuture
+                            ? 0.4
+                            : ratio === 0
+                            ? 0.5
+                            : 0.3 + ratio * 0.7,
+                          boxShadow: ratio >= 1 && !isFuture
+                            ? "0 0 10px rgba(255, 0, 85, 0.3)"
+                            : "none",
                         }}
                       />
                     </div>
-                    <span className={`text-[10px] font-bold mt-1.5 ${
-                      isCurrentDay ? "text-primary underline underline-offset-2" : "text-muted-foreground"
-                    }`}>
+                    <span
+                      className="text-[10px] font-bold mt-1.5"
+                      style={{
+                        color: isCurrentDay ? "#ff0055" : "#9ca3af",
+                        textDecoration: isCurrentDay ? "underline" : "none",
+                        textUnderlineOffset: "3px",
+                      }}
+                    >
                       {dayLabel}
                     </span>
                   </div>
