@@ -55,7 +55,7 @@ export default async function GoalsOverview({
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24 font-sans selection:bg-primary/20">
-      <header className="px-6 pt-12 pb-6 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-40 border-b border-border/50">
+      <header className="px-6 pt-12 pb-6 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-40 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
         <div>
           <h1 className="text-3xl font-heading font-extrabold text-foreground">My Goals</h1>
           <p className="text-muted-foreground text-sm font-medium mt-1">
@@ -64,7 +64,11 @@ export default async function GoalsOverview({
         </div>
         <Link
           href="/goals/new"
-          className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground hover:bg-primary/80 transition-all shadow-md active:scale-95"
+          className="w-10 h-10 rounded-full flex items-center justify-center text-white hover:opacity-80 transition-all active:scale-95"
+          style={{
+            backgroundColor: "#ff0055",
+            boxShadow: "0 4px 12px rgba(255, 0, 85, 0.3)",
+          }}
         >
           <Icon icon="solar:add-square-bold" className="text-xl" />
         </Link>

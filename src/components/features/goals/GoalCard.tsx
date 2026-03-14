@@ -49,7 +49,7 @@ export default function GoalCard({
   if (goal.status === "archived") {
     return (
       <Link href={`/goals/${goal.id}`} className="block mb-4">
-        <div className="bg-muted/30 border border-border/40 rounded-3xl p-5 shadow-none flex items-center gap-4 group opacity-60">
+        <div className="bg-muted/30 rounded-3xl p-5 flex items-center gap-4 group opacity-60">
           <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground text-xl">
             <Icon icon="solar:archive-bold" />
           </div>
@@ -67,7 +67,7 @@ export default function GoalCard({
   if (goal.status === "completed") {
     return (
       <Link href={`/goals/${goal.id}`} className="block mb-4">
-        <div className="bg-chart-3/5 border border-chart-3/20 rounded-3xl p-5 shadow-none flex items-center gap-4 group">
+        <div className="bg-chart-3/5 rounded-3xl p-5 flex items-center gap-4 group shadow-[0_1px_3px_rgba(0,0,0,0.09)]">
           <div className="w-12 h-12 rounded-2xl bg-chart-3/10 flex items-center justify-center text-chart-3 text-xl">
             <Icon icon="solar:check-circle-bold" />
           </div>
@@ -84,8 +84,7 @@ export default function GoalCard({
 
   return (
     <Link href={`/goals/${goal.id}`} className="block mb-4">
-      <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm relative overflow-hidden group cursor-pointer active:scale-[0.98] transition-all h-[240px] flex flex-col">
-        {/* Icon top right */}
+      <div className="bg-card rounded-3xl p-6 relative overflow-hidden group cursor-pointer active:scale-[0.98] transition-all h-[240px] flex flex-col shadow-[0_1px_3px_rgba(0,0,0,0.09),0_1px_2px_rgba(0,0,0,0.09)]">
         <div className="absolute right-0 top-0 p-4">
           <div
             className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"
