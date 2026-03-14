@@ -65,6 +65,17 @@ export default function GoalActions({ goal }: { goal: Goal }) {
     router.push("/goals");
   };
 
+  const handleReactivate = async () => {
+    if (!confirm("Reactivate this goal? It will move back to your active goals.")) return;
+
+    await supabase
+      .from("goals")
+      .update({ status: "active" })
+      .eq("id", goal.id);
+
+    router.push("/goals");
+  };
+
   return (
     <div className="relative">
       <button
@@ -78,10 +89,10 @@ export default function GoalActions({ goal }: { goal: Goal }) {
       {showMenu && (
         <>
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-40 bg-black/5"
             onClick={() => setShowMenu(false)}
           />
-          <div className="absolute right-0 top-12 z-50 w-48 rounded-2xl bg-card border border-border/60 shadow-xl overflow-hidden">
+          <div className="absolute right-0 top-12 z-[60] w-48 rounded-2xl bg-white shadow-[0_4px_20px_rgba(0,0,0,0.2)] overflow-hidden" style={{ backgroundColor: "#ffffff" }}>
             <button
               onClick={() => {
                 setShowMenu(false);
@@ -91,30 +102,46 @@ export default function GoalActions({ goal }: { goal: Goal }) {
             >
               Edit Goal
             </button>
-            <button
-              onClick={() => {
-                setShowMenu(false);
-                handleComplete();
-              }}
-              className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors text-green-600"
-            >
-              Mark as Completed
-            </button>
-            <button
-              onClick={() => {
-                setShowMenu(false);
-                handleArchive();
-              }}
-              className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors"
-            >
-              Archive
-            </button>
+            {goal.status === "active" && (
+              <button
+                onClick={() => {
+                  setShowMenu(false);
+                  handleComplete();
+                }}
+                className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors text-green-600"
+              >
+                Mark as Completed
+              </button>
+            )}
+            {goal.status === "active" && (
+              <button
+                onClick={() => {
+                  setShowMenu(false);
+                  handleArchive();
+                }}
+                className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors"
+              >
+                Archive
+              </button>
+            )}
+            {(goal.status === "archived" || goal.status === "completed") && (
+              <button
+                onClick={() => {
+                  setShowMenu(false);
+                  handleReactivate();
+                }}
+                className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors"
+                style={{ color: "#ff0055" }}
+              >
+                Reactivate Goal
+              </button>
+            )}
             <button
               onClick={() => {
                 setShowMenu(false);
                 handleDelete();
               }}
-              className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors text-red-500"
+              className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors text-red-500"
             >
               Delete
             </button>
@@ -129,7 +156,7 @@ export default function GoalActions({ goal }: { goal: Goal }) {
             className="fixed inset-0 bg-black/40 z-50"
             onClick={() => setShowEdit(false)}
           />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 mx-auto max-w-md rounded-2xl bg-white p-6 shadow-xl">
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 mx-auto max-w-md rounded-2xl bg-card p-6 shadow-[0_8px_30px_rgba(0,0,0,0.15)]">
             <h2 className="text-lg font-bold mb-4">Edit Goal</h2>
             <form onSubmit={handleUpdate} className="space-y-4">
               <div>
