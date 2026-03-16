@@ -44,7 +44,7 @@ export default function TaskForm({
 
   return (
     <div
-      className="bg-card rounded-3xl p-6 space-y-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+      className="bg-card rounded-3xl p-6 space-y-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)] animate-expand overflow-hidden"
       style={{ border: `2px solid ${goalColor}30` }}
     >
       <div className="flex items-center gap-3">

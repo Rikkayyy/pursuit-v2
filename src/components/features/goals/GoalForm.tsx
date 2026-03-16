@@ -39,7 +39,7 @@ function NewTaskInput({
       <button
         type="button"
         onClick={() => setIsExpanded(true)}
-        className="w-full border-2 border-dashed border-border rounded-[1.5rem] p-5 flex flex-col items-center justify-center gap-2 text-muted-foreground/40 hover:bg-primary/5 hover:border-primary/20 hover:text-primary transition-all group active:scale-[0.98]"
+        className="w-full border-2 border-dashed border-border rounded-[1.5rem] p-5 flex flex-col items-center justify-center gap-2 text-muted-foreground/40 hover:bg-primary/5 hover:border-primary/20 hover:text-primary transition-all group active:scale-[0.98] tap"
       >
         <div className="w-10 h-10 rounded-full border border-dashed border-muted-foreground/30 flex items-center justify-center group-hover:border-primary/40 group-hover:bg-primary/10">
           <Icon

@@ -23,15 +23,15 @@ export default function AddTask({
     return (
       <button
         onClick={() => setIsExpanded(true)}
-        className="w-full mt-4 border-2 border-dashed border-border rounded-[1.5rem] p-5 flex flex-col items-center justify-center gap-2 text-muted-foreground/40 hover:bg-primary/5 hover:border-primary/20 hover:text-primary transition-all group active:scale-[0.98]"
+        className="w-full mt-4 border border-dashed border-muted-foreground/20 rounded-2xl py-3 px-4 flex items-center justify-center gap-2 text-muted-foreground/40 hover:bg-primary/5 hover:border-primary/20 hover:text-primary transition-all group active:scale-[0.98] tap"
       >
-        <div className="w-10 h-10 rounded-full border border-dashed border-muted-foreground/30 flex items-center justify-center group-hover:border-primary/40 group-hover:bg-primary/10">
+        <div className="w-6 h-6 rounded-full border border-dashed border-muted-foreground/30 flex items-center justify-center group-hover:border-primary/40 group-hover:bg-primary/10">
           <Icon
             icon="hugeicons:add-01"
-            className="text-xl group-hover:scale-125 transition-transform"
+            className="text-sm group-hover:scale-125 transition-transform"
           />
         </div>
-        <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+        <span className="text-[10px] font-black uppercase tracking-[0.15em]">
           Add a system
         </span>
       </button>
