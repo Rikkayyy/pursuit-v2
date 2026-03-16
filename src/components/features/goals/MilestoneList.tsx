@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import type { Milestone } from "@/types";
+import { toggleMilestone as toggleMilestoneApi, updateMilestone, deleteMilestone as deleteMilestoneApi } from "@/lib/api/milestones";
 
 export default function MilestoneList({
   milestones,
@@ -19,12 +20,13 @@ export default function MilestoneList({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
 
-  const toggleMilestone = async (milestone: Milestone) => {
+  const handleToggle = async (milestone: Milestone) => {
     setLoading(milestone.id);
-    await supabase
-      .from("milestones")
-      .update({ is_completed: !milestone.is_completed })
-      .eq("id", milestone.id);
+    try {
+      await toggleMilestoneApi(supabase, milestone.id, milestone.is_completed);
+    } catch (error) {
+      console.error("Failed to toggle milestone:", error);
+    }
     setLoading(null);
     router.refresh();
   };
@@ -37,10 +39,11 @@ export default function MilestoneList({
   const saveEdit = async (id: string) => {
     if (!editTitle.trim()) return;
     setLoading(id);
-    await supabase
-      .from("milestones")
-      .update({ title: editTitle.trim() })
-      .eq("id", id);
+    try {
+      await updateMilestone(supabase, id, { title: editTitle.trim() });
+    } catch (error) {
+      console.error("Failed to update milestone:", error);
+    }
     setEditingId(null);
     setLoading(null);
     router.refresh();
@@ -51,10 +54,14 @@ export default function MilestoneList({
     setEditTitle("");
   };
 
-  const deleteMilestone = async (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Delete this milestone?")) return;
     setLoading(id);
-    await supabase.from("milestones").delete().eq("id", id);
+    try {
+      await deleteMilestoneApi(supabase, id);
+    } catch (error) {
+      console.error("Failed to delete milestone:", error);
+    }
     setLoading(null);
     router.refresh();
   };
@@ -113,7 +120,7 @@ export default function MilestoneList({
                     <Icon icon="solar:check-read-bold" className="text-lg" />
                   </button>
                   <button
-                    onClick={() => deleteMilestone(milestone.id)}
+                    onClick={() => handleDelete(milestone.id)}
                     className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground flex items-center justify-center hover:bg-destructive/10 hover:text-destructive active:scale-90 transition-all"
                   >
                     <Icon icon="solar:trash-bin-trash-bold" className="text-lg" />
@@ -133,42 +140,39 @@ export default function MilestoneList({
           );
         }
 
-        const isCompleted = milestone.is_completed;
-
         return (
           <div
             key={milestone.id}
             className={`flex items-center gap-4 rounded-2xl p-4 group transition-colors cursor-pointer ${
-              isCompleted
+              milestone.is_completed
                 ? ""
                 : "bg-card shadow-[0_2px_8px_rgba(0,0,0,0.08)] active:bg-secondary hover:shadow-md"
             }`}
             style={{
-              backgroundColor: isCompleted ? `${goalColor}08` : undefined,
-              border: isCompleted ? `1px solid ${goalColor}15` : undefined,
+              backgroundColor: milestone.is_completed ? `${goalColor}08` : undefined,
             }}
             onClick={() => startEdit(milestone)}
           >
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                toggleMilestone(milestone);
+                handleToggle(milestone);
               }}
               disabled={loading === milestone.id}
               className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
               style={{
-                backgroundColor: isCompleted ? goalColor : "transparent",
-                border: isCompleted ? `2px solid ${goalColor}` : "2px solid #9ca3af",
+                backgroundColor: milestone.is_completed ? goalColor : "transparent",
+                border: milestone.is_completed ? `2px solid ${goalColor}` : "2px solid #9ca3af",
               }}
             >
-              {isCompleted && (
+              {milestone.is_completed && (
                 <Icon icon="solar:check-read-bold" className="text-white text-xs" />
               )}
             </button>
 
             <span
               className={`flex-1 font-bold ${
-                isCompleted
+                milestone.is_completed
                   ? "text-muted-foreground line-through decoration-muted-foreground/30"
                   : "text-foreground"
               }`}

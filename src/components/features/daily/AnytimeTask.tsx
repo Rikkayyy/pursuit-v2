@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { Icon } from "@iconify/react";
+import { useTaskToggle } from "@/hooks/useTaskToggle";
 
 type AnytimeTaskProps = {
   item: {
@@ -20,69 +19,45 @@ type AnytimeTaskProps = {
 };
 
 export default function AnytimeTask({ item, today }: AnytimeTaskProps) {
-  const supabase = createClient();
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-
-  const toggleTask = async () => {
-    setLoading(true);
-
-    if (item.isCompleted) {
-      await supabase
-        .from("task_logs")
-        .delete()
-        .eq("task_id", item.task.id)
-        .eq("date", today);
-    } else {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      await supabase.from("task_logs").insert({
-        task_id: item.task.id,
-        user_id: user.id,
-        date: today,
-      });
-    }
-
-    setLoading(false);
-    router.refresh();
-  };
+  const { isCompleted, isPending, toggle } = useTaskToggle(
+    item.task.id,
+    item.isCompleted,
+    today
+  );
 
   return (
     <div
       className={`bg-card rounded-2xl p-4 flex items-center gap-4 transition-all relative overflow-hidden ${
-        item.isCompleted
+        isCompleted
           ? "shadow-none opacity-80 grayscale-[0.3]"
-          : "shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] active:scale-[0.98] cursor-pointer"
+          : "shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] active:scale-[0.98] cursor-pointer"
       }`}
     >
       <div
         className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl"
         style={{
-          backgroundColor: item.isCompleted ? `${item.goalColor}66` : item.goalColor,
+          backgroundColor: isCompleted ? `${item.goalColor}66` : item.goalColor,
         }}
       />
 
       <button
-        onClick={toggleTask}
-        disabled={loading}
+        onClick={toggle}
+        disabled={isPending}
         className="w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all"
         style={{
-          borderColor: item.isCompleted ? item.goalColor : "var(--muted-foreground)",
-          backgroundColor: item.isCompleted ? item.goalColor : "transparent",
+          borderColor: isCompleted ? item.goalColor : "var(--muted-foreground)",
+          backgroundColor: isCompleted ? item.goalColor : "transparent",
         }}
       >
-        {item.isCompleted && (
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+        {isCompleted && (
+          <Icon icon="solar:check-read-bold" className="text-white text-base" />
         )}
       </button>
 
       <div className="flex-1">
         <h4
           className={`font-bold text-base leading-tight ${
-            item.isCompleted
+            isCompleted
               ? "text-muted-foreground line-through decoration-muted-foreground/40"
               : "text-foreground"
           }`}

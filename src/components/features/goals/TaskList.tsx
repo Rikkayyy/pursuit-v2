@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import type { Task } from "@/types";
 import TaskForm from "@/components/features/systems/TaskForm";
+import { updateTask as updateTaskApi, deleteTask as deleteTaskApi } from "@/lib/api/tasks";
 
 export default function TaskList({ tasks, goalColor }: { tasks: Task[]; goalColor: string }) {
   const supabase = createClient();
@@ -13,10 +14,14 @@ export default function TaskList({ tasks, goalColor }: { tasks: Task[]; goalColo
   const [loading, setLoading] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const deleteTask = async (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Delete this task? This will also remove all its logs.")) return;
     setLoading(id);
-    await supabase.from("tasks").delete().eq("id", id);
+    try {
+      await deleteTaskApi(supabase, id);
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+    }
     setLoading(null);
     router.refresh();
   };
@@ -43,14 +48,15 @@ export default function TaskList({ tasks, goalColor }: { tasks: Task[]; goalColo
               saveLabel="Save Changes"
               savingLabel="Saving..."
               onSave={async (data) => {
-                await supabase
-                  .from("tasks")
-                  .update({
+                try {
+                  await updateTaskApi(supabase, task.id, {
                     title: data.title,
                     type: data.type,
                     frequency: data.type === "recurring" ? data.frequency : null,
-                  })
-                  .eq("id", task.id);
+                  });
+                } catch (error) {
+                  console.error("Failed to update task:", error);
+                }
                 setEditingId(null);
                 router.refresh();
               }}
@@ -90,7 +96,7 @@ export default function TaskList({ tasks, goalColor }: { tasks: Task[]; goalColo
               </div>
             </div>
             <button
-              onClick={() => deleteTask(task.id)}
+              onClick={() => handleDelete(task.id)}
               disabled={loading === task.id}
               className="w-10 h-10 rounded-xl bg-secondary/50 text-muted-foreground flex items-center justify-center hover:bg-destructive/10 hover:text-destructive transition-all active:scale-90 sm:opacity-0 sm:group-hover:opacity-100"
             >
