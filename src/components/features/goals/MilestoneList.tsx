@@ -5,31 +5,92 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import type { Milestone } from "@/types";
-import { toggleMilestone as toggleMilestoneApi, updateMilestone, deleteMilestone as deleteMilestoneApi } from "@/lib/api/milestones";
+import { updateMilestone, deleteMilestone as deleteMilestoneApi } from "@/lib/api/milestones";
+import { useMilestoneToggle } from "@/hooks/useMilestoneToggle";
+
+function MilestoneItem({
+  milestone,
+  goalColor,
+  onEdit,
+  onToggle,
+}: {
+  milestone: Milestone;
+  goalColor: string;
+  onEdit: (milestone: Milestone) => void;
+  onToggle?: (milestoneId: string, newState: boolean) => void;
+}) {
+  const { isCompleted, isPending, toggle } = useMilestoneToggle(
+    milestone.id,
+    milestone.is_completed
+  );
+
+  const handleToggle = () => {
+    const newState = !isCompleted;
+    onToggle?.(milestone.id, newState);
+    toggle();
+  };
+
+  return (
+    <div
+      className={`flex items-center gap-4 rounded-2xl p-4 group transition-all duration-200 cursor-pointer ${
+        isCompleted
+          ? ""
+          : "bg-card shadow-[0_2px_8px_rgba(0,0,0,0.08)] active:bg-secondary hover:shadow-md"
+      }`}
+      style={{
+        backgroundColor: isCompleted ? `${goalColor}08` : undefined,
+      }}
+      onClick={() => onEdit(milestone)}
+    >
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          handleToggle();
+        }}
+        disabled={isPending}
+        className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200"
+        style={{
+          backgroundColor: isCompleted ? goalColor : "transparent",
+          border: isCompleted ? `2px solid ${goalColor}` : "2px solid #9ca3af",
+          boxShadow: isCompleted ? `0 0 8px ${goalColor}44` : "none",
+        }}
+      >
+        {isCompleted && (
+          <Icon icon="solar:check-read-bold" className="text-white text-xs" />
+        )}
+      </button>
+
+      <span
+        className={`flex-1 font-bold transition-all duration-200 ${
+          isCompleted
+            ? "text-muted-foreground line-through decoration-muted-foreground/30"
+            : "text-foreground"
+        }`}
+      >
+        {milestone.title}
+      </span>
+
+      {milestone.due_date && (
+        <Icon icon="solar:calendar-linear" className="text-muted-foreground text-sm" />
+      )}
+    </div>
+  );
+}
 
 export default function MilestoneList({
   milestones,
   goalColor,
+  onToggle,
 }: {
   milestones: Milestone[];
   goalColor: string;
+  onToggle?: (milestoneId: string, newState: boolean) => void;
 }) {
   const supabase = createClient();
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
-
-  const handleToggle = async (milestone: Milestone) => {
-    setLoading(milestone.id);
-    try {
-      await toggleMilestoneApi(supabase, milestone.id, milestone.is_completed);
-    } catch (error) {
-      console.error("Failed to toggle milestone:", error);
-    }
-    setLoading(null);
-    router.refresh();
-  };
 
   const startEdit = (milestone: Milestone) => {
     setEditingId(milestone.id);
@@ -77,8 +138,9 @@ export default function MilestoneList({
           return (
             <div
               key={milestone.id}
-              className="bg-white rounded-2xl p-3 shadow-xl animate-in fade-in zoom-in-95 duration-200"
+              className="rounded-2xl p-3 shadow-xl animate-in fade-in zoom-in-95 duration-200"
               style={{
+                backgroundColor: "#ffffff",
                 border: `2px solid ${goalColor}`,
                 boxShadow: `0 4px 20px ${goalColor}10`,
               }}
@@ -110,7 +172,7 @@ export default function MilestoneList({
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => saveEdit(milestone.id)}
-                    disabled={!editTitle.trim()}
+                    disabled={!editTitle.trim() || loading === milestone.id}
                     className="w-8 h-8 rounded-lg text-white flex items-center justify-center hover:opacity-90 active:scale-90 transition-all disabled:opacity-50"
                     style={{
                       backgroundColor: goalColor,
@@ -141,49 +203,13 @@ export default function MilestoneList({
         }
 
         return (
-          <div
+          <MilestoneItem
             key={milestone.id}
-            className={`flex items-center gap-4 rounded-2xl p-4 group transition-colors cursor-pointer ${
-              milestone.is_completed
-                ? ""
-                : "bg-card shadow-[0_2px_8px_rgba(0,0,0,0.08)] active:bg-secondary hover:shadow-md"
-            }`}
-            style={{
-              backgroundColor: milestone.is_completed ? `${goalColor}08` : undefined,
-            }}
-            onClick={() => startEdit(milestone)}
-          >
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggle(milestone);
-              }}
-              disabled={loading === milestone.id}
-              className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
-              style={{
-                backgroundColor: milestone.is_completed ? goalColor : "transparent",
-                border: milestone.is_completed ? `2px solid ${goalColor}` : "2px solid #9ca3af",
-              }}
-            >
-              {milestone.is_completed && (
-                <Icon icon="solar:check-read-bold" className="text-white text-xs" />
-              )}
-            </button>
-
-            <span
-              className={`flex-1 font-bold ${
-                milestone.is_completed
-                  ? "text-muted-foreground line-through decoration-muted-foreground/30"
-                  : "text-foreground"
-              }`}
-            >
-              {milestone.title}
-            </span>
-
-            {milestone.due_date && (
-              <Icon icon="solar:calendar-linear" className="text-muted-foreground text-sm" />
-            )}
-          </div>
+            milestone={milestone}
+            goalColor={goalColor}
+            onEdit={startEdit}
+            onToggle={onToggle}
+          />
         );
       })}
     </div>
