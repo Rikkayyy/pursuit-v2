@@ -28,12 +28,13 @@ export default function DailyTaskList({
   tasks,
   today,
   goalStats,
+  onTaskToggle,
 }: {
   tasks: DailyTask[];
   today: string;
   goalStats: Record<string, { rate: number }>;
+  onTaskToggle?: (taskId: string, newState: boolean) => void;
 }) {
-  // Group tasks by goal
   const grouped: Record<string, { goalTitle: string; goalColor: string; goalId: string; tasks: DailyTask[] }> = {};
 
   tasks.forEach((t) => {
@@ -79,7 +80,7 @@ export default function DailyTaskList({
             </div>
             <div className="space-y-3">
               {group.tasks.map((item) => (
-                <TaskItem key={item.task.id} item={item} today={today} />
+                <TaskItem key={item.task.id} item={item} today={today} onToggle={onTaskToggle} />
               ))}
             </div>
           </section>

@@ -16,13 +16,15 @@ type AnytimeTaskProps = {
     isCompleted: boolean;
   };
   today: string;
+  onToggle?: (taskId: string, newState: boolean) => void;
 };
 
-export default function AnytimeTask({ item, today }: AnytimeTaskProps) {
+export default function AnytimeTask({ item, today, onToggle }: AnytimeTaskProps) {
   const { isCompleted, isPending, toggle } = useTaskToggle(
     item.task.id,
     item.isCompleted,
-    today
+    today,
+    onToggle
   );
 
   return (

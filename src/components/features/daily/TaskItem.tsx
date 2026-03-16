@@ -19,14 +19,17 @@ type DailyTask = {
 export default function TaskItem({
   item,
   today,
+  onToggle,
 }: {
   item: DailyTask;
   today: string;
+  onToggle?: (taskId: string, newState: boolean) => void;
 }) {
   const { isCompleted, isPending, toggle } = useTaskToggle(
     item.task.id,
     item.isCompleted,
-    today
+    today,
+    onToggle
   );
 
   return (
@@ -38,7 +41,7 @@ export default function TaskItem({
       }`}
     >
       <div
-        className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl"
+        className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl transition-colors duration-300"
         style={{
           backgroundColor: isCompleted ? `${item.goalColor}66` : item.goalColor,
         }}
@@ -47,7 +50,7 @@ export default function TaskItem({
       <button
         onClick={toggle}
         disabled={isPending}
-        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
+        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
           isCompleted
             ? "text-white"
             : "border-2 border-muted-foreground/30 group-hover:border-current group-hover:bg-current/5"
@@ -68,7 +71,7 @@ export default function TaskItem({
 
       <div className="flex-1">
         <h4
-          className={`font-bold text-base leading-tight ${
+          className={`font-bold text-base leading-tight transition-all duration-200 ${
             isCompleted
               ? "text-muted-foreground line-through decoration-muted-foreground/40 tracking-tight"
               : "text-foreground"
