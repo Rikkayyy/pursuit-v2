@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { Icon } from "@iconify/react";
 import SignOutButton from "@/components/ui/SignOutButton";
 import DeleteAccountButton from "@/components/ui/DeleteAccountButton";
+import Link from "next/link";
 
 export default async function Settings() {
   const supabase = await createClient();
@@ -11,29 +13,42 @@ export default async function Settings() {
     redirect("/login");
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="mx-auto max-w-lg">
-        <h1 className="text-2xl font-bold">Settings</h1>
+  const { count: goalCount } = await supabase
+    .from("goals")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id);
 
-        {/* Account Info */}
-        <div className="mt-6 rounded-xl bg-white border border-gray-200 p-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-3">
-            Account
-          </h2>
-          <div className="space-y-3">
-            <div>
-              <p className="text-xs text-gray-500">Email</p>
-              <p className="text-sm font-medium">{user.email}</p>
+  const { count: completionCount } = await supabase
+    .from("task_logs")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  return (
+    <div className="min-h-screen bg-background text-foreground pb-32 font-sans selection:bg-primary/20">
+      <header className="px-6 pt-12 pb-6 flex items-center gap-4">
+        <Link
+          href="/"
+          className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground active:scale-90 transition-transform"
+        >
+          <Icon icon="solar:arrow-left-linear" className="text-xl" />
+        </Link>
+        <h1 className="text-2xl font-heading font-extrabold">Settings</h1>
+      </header>
+
+      <main className="px-6 space-y-6">
+        {/* Profile */}
+        <section className="bg-card rounded-3xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+          <div className="flex items-center gap-4 mb-6">
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-2xl"
+              style={{ backgroundColor: "#ff0055" }}
+            >
+              <Icon icon="solar:user-bold" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">User ID</p>
-              <p className="text-sm font-mono text-gray-600">{user.id}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">Joined</p>
-              <p className="text-sm font-medium">
-                {new Date(user.created_at).toLocaleDateString("en-US", {
+              <h2 className="font-heading font-bold text-lg">{user.email}</h2>
+              <p className="text-xs text-muted-foreground">
+                Joined {new Date(user.created_at).toLocaleDateString("en-US", {
                   month: "long",
                   day: "numeric",
                   year: "numeric",
@@ -41,35 +56,65 @@ export default async function Settings() {
               </p>
             </div>
           </div>
-        </div>
 
-        {/* App Info */}
-        <div className="mt-4 rounded-xl bg-white border border-gray-200 p-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-secondary/30 rounded-2xl p-4 text-center">
+              <span className="text-2xl font-heading font-bold block">{goalCount || 0}</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Goals</span>
+            </div>
+            <div className="bg-secondary/30 rounded-2xl p-4 text-center">
+              <span className="text-2xl font-heading font-bold block">{completionCount || 0}</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Completions</span>
+            </div>
+          </div>
+        </section>
+
+        {/* About */}
+        <section className="bg-card rounded-3xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+          <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">
             About
           </h2>
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm">Version</p>
-              <p className="text-sm text-gray-500">0.1.0 (MVP)</p>
+              <div className="flex items-center gap-3">
+                <Icon icon="solar:info-circle-linear" className="text-muted-foreground" />
+                <span className="text-sm font-medium">Version</span>
+              </div>
+              <span className="text-sm text-muted-foreground">0.1.0 (MVP)</span>
             </div>
             <div className="flex items-center justify-between">
-              <p className="text-sm">Method</p>
-              <p className="text-sm text-gray-500">GPS — Goal · Plan · System</p>
+              <div className="flex items-center gap-3">
+                <Icon icon="solar:compass-linear" className="text-muted-foreground" />
+                <span className="text-sm font-medium">Method</span>
+              </div>
+              <span className="text-sm text-muted-foreground">GPS</span>
+            </div>
+            <div className="flex items-center justify-between">
+              {/* <div className="flex items-center gap-3">
+                <Icon icon="solar:magic-stick-3-linear" className="text-muted-foreground" />
+                <span className="text-sm font-medium">AI</span>
+              </div>
+              <span className="text-sm text-muted-foreground">Powered by Claude</span> */}
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Actions */}
-        <div className="mt-4 rounded-xl bg-white border border-gray-200 overflow-hidden">
-          <div className="p-4 border-b border-gray-100">
+        <section className="bg-card rounded-3xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+          <div className="p-5 flex items-center gap-3 active:bg-secondary transition-colors cursor-pointer border-b border-border/50">
+            <Icon icon="solar:logout-2-linear" className="text-foreground text-xl" />
             <SignOutButton />
           </div>
-          <div className="p-4">
+          <div className="p-5 flex items-center gap-3 active:bg-secondary transition-colors cursor-pointer">
+            <Icon icon="solar:trash-bin-trash-linear" className="text-destructive text-xl" />
             <DeleteAccountButton />
           </div>
-        </div>
-      </div>
+        </section>
+
+        <p className="text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] pt-4 pb-8">
+          {/* Built with 💪 by Rikki */}
+        </p>
+      </main>
     </div>
   );
-} 
+}
