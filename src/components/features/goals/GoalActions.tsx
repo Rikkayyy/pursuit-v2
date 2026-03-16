@@ -80,7 +80,7 @@ export default function GoalActions({ goal }: { goal: Goal }) {
     <div className="relative">
       <button
         onClick={() => setShowMenu(!showMenu)}
-        className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground active:scale-90 transition-transform"
+        className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground active:scale-90 transition-transform tap"
       >
         <Icon icon="solar:menu-dots-bold" className="text-xl" />
       </button>
@@ -98,7 +98,7 @@ export default function GoalActions({ goal }: { goal: Goal }) {
                 setShowMenu(false);
                 setShowEdit(true);
               }}
-              className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors"
+              className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary tap"
             >
               Edit Goal
             </button>
@@ -108,7 +108,7 @@ export default function GoalActions({ goal }: { goal: Goal }) {
                   setShowMenu(false);
                   handleComplete();
                 }}
-                className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors text-green-600"
+                className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors text-green-600 tap"
               >
                 Mark as Completed
               </button>
@@ -119,7 +119,7 @@ export default function GoalActions({ goal }: { goal: Goal }) {
                   setShowMenu(false);
                   handleArchive();
                 }}
-                className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors"
+                className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors tap"
               >
                 Archive
               </button>
@@ -130,7 +130,7 @@ export default function GoalActions({ goal }: { goal: Goal }) {
                   setShowMenu(false);
                   handleReactivate();
                 }}
-                className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors"
+                className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors tap"
                 style={{ color: "#ff0055" }}
               >
                 Reactivate Goal
@@ -141,7 +141,7 @@ export default function GoalActions({ goal }: { goal: Goal }) {
                 setShowMenu(false);
                 handleDelete();
               }}
-              className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors text-red-500"
+              className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-secondary transition-colors text-red-500 tap"
             >
               Delete
             </button>

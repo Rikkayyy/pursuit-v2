@@ -37,7 +37,7 @@ export default function GoalFilters({
           <button
             key={f.key}
             onClick={() => handleFilter(f.key)}
-            className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all active:scale-95 ${
+            className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all active:scale-95 tap ${
               isActive
                 ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
                 : "bg-secondary text-muted-foreground hover:bg-secondary/80"

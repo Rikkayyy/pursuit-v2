@@ -173,7 +173,7 @@ export default function MilestoneList({
                   <button
                     onClick={() => saveEdit(milestone.id)}
                     disabled={!editTitle.trim() || loading === milestone.id}
-                    className="w-8 h-8 rounded-lg text-white flex items-center justify-center hover:opacity-90 active:scale-90 transition-all disabled:opacity-50"
+                    className="w-8 h-8 rounded-lg text-white flex items-center justify-center hover:opacity-90 active:scale-90 transition-all disabled:opacity-50 tap"
                     style={{
                       backgroundColor: goalColor,
                       boxShadow: `0 2px 8px ${goalColor}30`,
@@ -183,7 +183,7 @@ export default function MilestoneList({
                   </button>
                   <button
                     onClick={() => handleDelete(milestone.id)}
-                    className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground flex items-center justify-center hover:bg-destructive/10 hover:text-destructive active:scale-90 transition-all"
+                    className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground flex items-center justify-center hover:bg-destructive/10 hover:text-destructive active:scale-90 transition-all tap"
                   >
                     <Icon icon="solar:trash-bin-trash-bold" className="text-lg" />
                   </button>

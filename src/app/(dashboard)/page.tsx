@@ -28,36 +28,36 @@ export default async function DailyView({
   const dayOfWeek = new Date(selectedDate + "T12:00:00").getDay();
   const isToday = selectedDate === today;
 
-  // Get all active goals with their tasks and today's logs
-  const { data: goals } = await supabase
-    .from("goals")
-    .select(`
-      id,
-      title,
-      color,
-      tasks (
+  // === WAVE 1: Fetch independent data in parallel ===
+  const [{ data: goals }, { data: todayLogs }] = await Promise.all([
+    supabase
+      .from("goals")
+      .select(`
         id,
         title,
-        type,
-        frequency,
-        scheduled_days,
-        due_date,
-        goal_id
-      )
-    `)
-    .eq("user_id", user.id)
-    .eq("status", "active");
-
-  // Get today's task logs
-  const { data: todayLogs } = await supabase
-    .from("task_logs")
-    .select("task_id")
-    .eq("user_id", user.id)
-    .eq("date", selectedDate);
+        color,
+        tasks (
+          id,
+          title,
+          type,
+          frequency,
+          scheduled_days,
+          due_date,
+          goal_id
+        )
+      `)
+      .eq("user_id", user.id)
+      .eq("status", "active"),
+    supabase
+      .from("task_logs")
+      .select("task_id")
+      .eq("user_id", user.id)
+      .eq("date", selectedDate),
+  ]);
 
   const completedTaskIds = new Set(todayLogs?.map((log) => log.task_id) || []);
 
-  // Get streaks for recurring tasks — add this block
+  // Collect task IDs for wave 2
   const allRecurringTaskIds: string[] = [];
   goals?.forEach((goal) => {
     goal.tasks?.forEach((task) => {
@@ -66,27 +66,26 @@ export default async function DailyView({
       }
     });
   });
-  const streaks = await getTaskStreaks(supabase, allRecurringTaskIds, timezone);
 
-  // Get 7-day activity for all tasks
-  const allTaskIds: string[] = [];
-  goals?.forEach((goal) => {
-    goal.tasks?.forEach((task) => {
-      if (task.type === "recurring") {
-        allTaskIds.push(task.id);
-      }
-    });
-  });
-  const dailyActivity = await getDailyCompletions(supabase, allTaskIds, timezone);
+  // === WAVE 2: Fetch dependent data in parallel ===
+  const [streaks, dailyActivity, ...goalStatsResults] = await Promise.all([
+    getTaskStreaks(supabase, allRecurringTaskIds, timezone),
+    getDailyCompletions(supabase, allRecurringTaskIds, timezone),
+    ...(goals || [])
+      .filter((goal) => goal.tasks && goal.tasks.length > 0)
+      .map((goal) => 
+        getWeeklyHitRate(supabase, goal.tasks, timezone).then((stats) => ({
+          goalId: goal.id,
+          rate: stats.rate,
+        }))
+      ),
+  ]);
 
-  // Calculate weekly hit rate per goal
+  // Build goalStats from parallel results
   const goalStats: Record<string, { rate: number }> = {};
-  for (const goal of goals || []) {
-    if (goal.tasks && goal.tasks.length > 0) {
-      const stats = await getWeeklyHitRate(supabase, goal.tasks, timezone);
-      goalStats[goal.id] = { rate: stats.rate };
-    }
-  }
+  goalStatsResults.forEach((result) => {
+    goalStats[result.goalId] = { rate: result.rate };
+  });
 
   // Filter tasks that are due today
   const todaysTasks: {

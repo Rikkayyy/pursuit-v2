@@ -36,7 +36,7 @@ export default function DateSelector({
     <div className="flex items-center gap-3">
       <button
         onClick={() => goToDate(-1)}
-        className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground active:scale-90 transition-transform"
+        className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground active:scale-90 transition-transform tap"
       >
         <Icon icon="solar:arrow-left-linear" className="text-xl" />
       </button>
@@ -48,7 +48,7 @@ export default function DateSelector({
         {!isToday && (
           <button
             onClick={goToToday}
-            className="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline transition-colors"
+            className="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline transition-colors tap"
           >
             Back to today
           </button>
@@ -58,7 +58,7 @@ export default function DateSelector({
       <button
         onClick={() => goToDate(1)}
         disabled={isFuture}
-        className={`w-10 h-10 rounded-full bg-secondary flex items-center justify-center active:scale-90 transition-transform ${
+        className={`w-10 h-10 rounded-full bg-secondary flex items-center justify-center active:scale-90 transition-transform tap ${
           isFuture
             ? "text-muted-foreground/30 cursor-not-allowed"
             : "text-foreground"

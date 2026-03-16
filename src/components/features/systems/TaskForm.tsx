@@ -78,7 +78,7 @@ export default function TaskForm({
           <button
             type="button"
             onClick={() => setType("recurring")}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all tap ${
               type === "recurring" ? "text-white shadow-sm" : "bg-secondary text-secondary-foreground"
             }`}
             style={{ backgroundColor: type === "recurring" ? goalColor : undefined }}
@@ -88,7 +88,7 @@ export default function TaskForm({
           <button
             type="button"
             onClick={() => setType("one_time")}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all tap ${
               type === "one_time" ? "text-white shadow-sm" : "bg-secondary text-secondary-foreground"
             }`}
             style={{ backgroundColor: type === "one_time" ? goalColor : undefined }}
@@ -109,7 +109,7 @@ export default function TaskForm({
                 key={f}
                 type="button"
                 onClick={() => setFrequency(f)}
-                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all tap ${
                   frequency === f ? "text-white shadow-sm" : "bg-secondary text-secondary-foreground"
                 }`}
                 style={{ backgroundColor: frequency === f ? goalColor : undefined }}
@@ -125,7 +125,7 @@ export default function TaskForm({
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 h-12 rounded-2xl bg-secondary text-secondary-foreground font-bold text-sm transition-all active:scale-95"
+          className="flex-1 h-12 rounded-2xl bg-secondary text-secondary-foreground font-bold text-sm transition-all active:scale-95 tap"
         >
           Cancel
         </button>
@@ -133,7 +133,7 @@ export default function TaskForm({
           type="button"
           onClick={handleSave}
           disabled={loading || !title.trim()}
-          className="flex-1 h-12 rounded-2xl text-white font-bold text-sm transition-all active:scale-95 disabled:opacity-50"
+          className="flex-1 h-12 rounded-2xl text-white font-bold text-sm transition-all active:scale-95 disabled:opacity-50 tap"
           style={{ backgroundColor: goalColor }}
         >
           {loading ? savingLabel : saveLabel}

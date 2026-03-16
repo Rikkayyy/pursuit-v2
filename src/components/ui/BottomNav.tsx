@@ -15,7 +15,7 @@ export default function BottomNav() {
       <div className="flex justify-between items-center max-w-md mx-auto relative pt-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] px-6">
         <Link
           href="/"
-          className="flex flex-col items-center gap-1.5 p-2 flex-1 transition-colors"
+          className="flex flex-col items-center gap-1.5 p-2 flex-1 transition-colors tap"
           style={{ color: isHome && !isGoals ? "#ff0055" : "#9ca3af" }}
         >
           <Icon icon={isHome && !isGoals ? "solar:home-2-bold" : "solar:home-2-linear"} className="text-2xl" />
@@ -38,7 +38,7 @@ export default function BottomNav() {
 
         <Link
           href="/goals"
-          className="flex flex-col items-center gap-1.5 p-2 flex-1 transition-colors group"
+          className="flex flex-col items-center gap-1.5 p-2 flex-1 transition-colors group tap"
           style={{ color: isGoals ? "#ff0055" : "#9ca3af" }}
         >
           <Icon

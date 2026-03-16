@@ -39,7 +39,7 @@ export default function AddMilestone({ goalId, nextOrder }: { goalId: string; ne
       <button
         type="submit"
         disabled={loading || !title.trim()}
-        className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center text-foreground active:bg-primary active:text-white transition-all disabled:opacity-50"
+        className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center text-foreground active:bg-primary active:text-white transition-all disabled:opacity-50 tap"
       >
         <Icon icon="hugeicons:add-01" className="text-xl" />
       </button>
