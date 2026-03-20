@@ -1,9 +1,9 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: 'com.pursuitgoals.app',
-  appName: 'Pursuit',
-  webDir: 'out',
+  appId: "com.pursuitgoals.app",
+  appName: "Pursuit",
+  webDir: "out",
   server: {
     url: "https://pursuitgoals.com",
     cleartext: false,
@@ -11,7 +11,9 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: "automatic",
     preferredContentMode: "mobile",
-    scheme: "pursuit",
+    scheme: "Pursuit",
+    backgroundColor: "#ffffff",
+    scrollEnabled: true,
   },
   plugins: {
     SplashScreen: {
@@ -21,10 +23,10 @@ const config: CapacitorConfig = {
       showSpinner: false,
     },
     StatusBar: {
-      style: "LIGHT",
+      style: "DARK",
       backgroundColor: "#ffffff",
     },
-  }
+  },
 };
 
 export default config;
