@@ -24,3 +24,56 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Tap feedback for all interactive elements */
+button, a, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Smooth transitions globally */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Prevent text selection on interactive elements on mobile */
+button, a {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Universal tap animation */
+.tap {
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+.tap:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+/* Expand animation */
+@keyframes expandIn {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: scaleY(0.8);
+    transform-origin: top;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+}
+
+.animate-expand {
+  animation: expandIn 0.4s ease-out forwards;
+}

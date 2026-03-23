@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { Icon } from "@iconify/react";
 
 export default function AddMilestone({ goalId, nextOrder }: { goalId: string; nextOrder: number }) {
   const [title, setTitle] = useState("");
@@ -27,20 +28,20 @@ export default function AddMilestone({ goalId, nextOrder }: { goalId: string; ne
   };
 
   return (
-    <form onSubmit={handleAdd} className="mt-3 flex gap-2">
+    <form onSubmit={handleAdd} className="mt-4 flex gap-3">
       <input
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Add a milestone..."
-        className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+        placeholder="Add a checkpoint..."
+        className="flex-1 bg-secondary/50 h-14 rounded-2xl px-5 font-medium outline-none focus:bg-secondary/70 transition-all"
       />
       <button
         type="submit"
         disabled={loading || !title.trim()}
-        className="rounded-lg bg-black px-3 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+        className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center text-foreground active:bg-primary active:text-white transition-all disabled:opacity-50 tap"
       >
-        Add
+        <Icon icon="hugeicons:add-01" className="text-xl" />
       </button>
     </form>
   );
