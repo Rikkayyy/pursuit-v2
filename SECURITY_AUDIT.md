@@ -12,7 +12,7 @@
 
 The application is a Next.js 16 PWA backed by Supabase. The codebase is lean (5 production dependencies), follows modern patterns in most areas, and shows good discipline around server-side auth checks in page components. However, two critical issues require immediate attention before this application is considered production-safe:
 
-1. **The Next.js middleware is misconfigured and never runs.** The file responsible for session refresh and route-level auth protection (`src/proxy.ts`) is not recognized by Next.js as middleware. All auth protection currently relies entirely on per-page server-component redirects.
+1. ~~**The Next.js middleware is misconfigured and never runs.**~~ **INVALID** — `src/proxy.ts` with `export function proxy()` is the correct Next.js 16 convention. The proxy runs correctly.
 
 2. **Account deletion is incomplete.** The delete flow removes database rows but does not delete the Supabase auth user, meaning a "deleted" user can sign back in.
 
@@ -20,7 +20,7 @@ Additionally, there are no security response headers configured, and the applica
 
 | Severity | Count |
 |----------|-------|
-| Critical | 2     |
+| Critical | 1 (1 invalidated) |
 | High     | 3     |
 | Medium   | 5     |
 | Low      | 4     |
@@ -34,45 +34,13 @@ Additionally, there are no security response headers configured, and the applica
 
 ---
 
-#### [CRITICAL] C1 — Middleware file never runs
+#### ~~[CRITICAL] C1 — Middleware file never runs~~ — **INVALID (Next.js 16)**
 
 **File:** `src/proxy.ts:1–12`
 
-**Description:**
-Next.js middleware must live in a file named `middleware.ts` (at the project root or inside `src/`) and export a function named `middleware` (default or named). The file `src/proxy.ts` exports a function named `proxy` — not `middleware` — and therefore Next.js never loads it. The `config.matcher` export inside this file is also ignored.
+**Status:** This finding was incorrect. In Next.js 16, the `middleware.ts` file convention was deprecated and replaced with `proxy.ts`. The function export must be named `proxy`. The existing `src/proxy.ts` with `export function proxy()` is the correct and current convention. Next.js 16 emits a deprecation warning if you use `middleware.ts` instead.
 
-```ts
-// src/proxy.ts
-export async function proxy(request: NextRequest) {  // ← wrong export name
-  return await updateSession(request);
-}
-export const config = { matcher: [...] };            // ← never read
-```
-
-**Impact:**
-- `updateSession()` (which refreshes Supabase JWT tokens and redirects unauthenticated users) never executes.
-- Expired sessions are not automatically refreshed; users may experience phantom auth failures.
-- The middleware-level route guard (redirect to `/login`) is completely absent. Dashboard routes are protected only by per-page `if (!user) redirect("/login")` calls — a weaker, second line of defense.
-- Any route that lacks an explicit server-component auth check (e.g., API routes, if added later) would be fully unprotected.
-
-**Recommended Fix:**
-Rename `src/proxy.ts` to `src/middleware.ts` and change the exported function name to `middleware`:
-
-```ts
-// src/middleware.ts
-import { type NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
-
-export async function middleware(request: NextRequest) {
-  return await updateSession(request);
-}
-
-export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
-};
-```
+The proxy runs correctly and `updateSession()` executes on every matched request. No action needed.
 
 ---
 
@@ -80,7 +48,7 @@ export const config = {
 
 ---
 
-#### [CRITICAL] C2 — Account deletion does not delete the auth user
+#### ~~[CRITICAL] C2 — Account deletion does not delete the auth user~~ — **FIXED**
 
 **File:** `src/components/ui/DeleteAccountButton.tsx:22–27`
 
