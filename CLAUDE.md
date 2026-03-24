@@ -22,7 +22,7 @@ The App Router has two route groups:
 - `(auth)/` — unauthenticated pages: `welcome`, `login`, `signup`, `forgot-password`, `reset-password`
 - `(dashboard)/` — protected pages: `/` (daily view), `/goals`, `/goals/[id]`, `/goals/new`, `/goals/ai`, `/settings`
 
-Auth protection is enforced in `middleware.ts` via `src/lib/supabase/middleware.ts` — unauthenticated users are redirected to `/welcome`.
+Auth protection is enforced in `src/proxy.ts` (Next.js 16 uses `proxy.ts` + `export function proxy()` — `middleware.ts` is the deprecated convention) via `src/lib/supabase/middleware.ts` — unauthenticated users are redirected to `/welcome`.
 
 ### Data Layer
 
@@ -67,6 +67,7 @@ The web app uses `safe-area-inset` CSS variables for iOS notch/home bar spacing.
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ANTHROPIC_API_KEY=
+SUPABASE_SERVICE_ROLE_KEY=   # Supabase "Secret key" — required for server-side auth user deletion
 ```
 ## Project Context
 
@@ -123,3 +124,8 @@ MVP is built and deployed. Core features working:
 
 - Design pass using Sleek.design components (Home and Goals Overview partially styled, Goal Detail is next)
 - Password reset self-service flow (pages not yet built; manual Supabase dashboard workaround exists)
+- **Security audit** (`SECURITY_AUDIT.md`) — working through findings on the `security-audit` branch:
+  - ~~C1~~ — Invalid (proxy.ts is correct for Next.js 16)
+  - ~~C2~~ — Fixed (`/api/delete-account` route now calls `adminClient.auth.admin.deleteUser()`)
+  - **Next up: H1** — Add HTTP security headers to `next.config.ts`
+  - Remaining: H2, H3, 5 Medium, 4 Low findings
