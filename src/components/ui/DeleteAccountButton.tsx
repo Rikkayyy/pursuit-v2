@@ -1,10 +1,8 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 export default function DeleteAccountButton() {
-  const supabase = createClient();
   const router = useRouter();
 
   const handleDelete = async () => {
@@ -18,12 +16,9 @@ export default function DeleteAccountButton() {
     );
     if (!doubleConfirm) return;
 
-    // Delete all user goals (cascades to milestones, tasks, task_logs)
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    const res = await fetch("/api/delete-account", { method: "POST" });
+    if (!res.ok) return;
 
-    await supabase.from("goals").delete().eq("user_id", user.id);
-    await supabase.auth.signOut();
     router.push("/login");
   };
 
