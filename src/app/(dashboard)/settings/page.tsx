@@ -108,29 +108,38 @@ export default async function Settings() {
           <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">
             Subscription
           </h2>
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-sm font-medium block">
-                {subscription?.subscription_status === "active" || subscription?.subscription_status === "trialing"
-                  ? "Pursuit Pro"
-                  : subscription?.subscription_status === "past_due"
-                  ? "Payment issue — update your card"
-                  : "Free plan"}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {subscription?.subscription_status === "active" || subscription?.subscription_status === "trialing"
-                  ? "AI goal planning unlocked"
-                  : "Upgrade to unlock AI goal planning"}
-              </span>
-            </div>
-            {subscription?.stripe_customer_id ? (
-              <ManageSubscriptionButton />
-            ) : (
-              <Link href="/goals/ai" className="text-sm font-medium" style={{ color: "#ff0055" }}>
-                Upgrade
-              </Link>
-            )}
-          </div>
+          {(() => {
+            const hasManageableSubscription =
+              subscription?.subscription_status === "active" ||
+              subscription?.subscription_status === "trialing" ||
+              subscription?.subscription_status === "past_due";
+
+            return (
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm font-medium block">
+                    {subscription?.subscription_status === "active" || subscription?.subscription_status === "trialing"
+                      ? "Pursuit Pro"
+                      : subscription?.subscription_status === "past_due"
+                      ? "Payment issue — update your card"
+                      : "Free plan"}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {subscription?.subscription_status === "active" || subscription?.subscription_status === "trialing"
+                      ? "AI goal planning unlocked"
+                      : "Upgrade to unlock AI goal planning"}
+                  </span>
+                </div>
+                {hasManageableSubscription ? (
+                  <ManageSubscriptionButton />
+                ) : (
+                  <Link href="/goals/ai" className="text-sm font-medium" style={{ color: "#ff0055" }}>
+                    Upgrade
+                  </Link>
+                )}
+              </div>
+            );
+          })()}
         </section>
 
         {/* Actions */}
