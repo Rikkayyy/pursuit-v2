@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Icon } from "@iconify/react";
 import SignOutButton from "@/components/ui/SignOutButton";
 import DeleteAccountButton from "@/components/ui/DeleteAccountButton";
+import ManageSubscriptionButton from "@/components/ui/ManageSubscriptionButton";
+import { getSubscription } from "@/lib/api/subscriptions";
 import Link from "next/link";
 
 export default async function Settings() {
@@ -22,6 +24,8 @@ export default async function Settings() {
     .from("task_logs")
     .select("*", { count: "exact", head: true })
     .eq("user_id", user.id);
+
+  const subscription = await getSubscription(supabase, user.id);
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-32 font-sans selection:bg-primary/20">
@@ -96,6 +100,36 @@ export default async function Settings() {
               </div>
               <span className="text-sm text-muted-foreground">Powered by Claude</span> */}
             </div>
+          </div>
+        </section>
+
+        {/* Subscription */}
+        <section className="bg-card rounded-3xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+          <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">
+            Subscription
+          </h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm font-medium block">
+                {subscription?.subscription_status === "active" || subscription?.subscription_status === "trialing"
+                  ? "Pursuit Pro"
+                  : subscription?.subscription_status === "past_due"
+                  ? "Payment issue — update your card"
+                  : "Free plan"}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {subscription?.subscription_status === "active" || subscription?.subscription_status === "trialing"
+                  ? "AI goal planning unlocked"
+                  : "Upgrade to unlock AI goal planning"}
+              </span>
+            </div>
+            {subscription?.stripe_customer_id ? (
+              <ManageSubscriptionButton />
+            ) : (
+              <Link href="/goals/ai" className="text-sm font-medium" style={{ color: "#ff0055" }}>
+                Upgrade
+              </Link>
+            )}
           </div>
         </section>
 

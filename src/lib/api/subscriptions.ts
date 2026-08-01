@@ -1,13 +1,18 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
-export async function getSubscriptionStatus(supabase: SupabaseClient, userId: string) {
+export async function getSubscription(supabase: SupabaseClient, userId: string) {
   const { data, error } = await supabase
     .from("subscriptions")
-    .select("subscription_status")
+    .select("subscription_status, stripe_customer_id, current_period_end")
     .eq("user_id", userId)
     .maybeSingle();
 
   if (error) throw error;
+  return data;
+}
+
+export async function getSubscriptionStatus(supabase: SupabaseClient, userId: string) {
+  const data = await getSubscription(supabase, userId);
   return data?.subscription_status ?? "none";
 }
 

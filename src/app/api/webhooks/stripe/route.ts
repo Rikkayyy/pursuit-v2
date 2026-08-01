@@ -64,6 +64,25 @@ export async function POST(req: NextRequest) {
       }
       break;
     }
+
+    case "invoice.payment_failed": {
+      const invoice = event.data.object as Stripe.Invoice;
+      const subscriptionId = invoice.parent?.subscription_details?.subscription;
+      if (!subscriptionId) break;
+
+      const { data } = await supabase
+        .from("subscriptions")
+        .select("user_id")
+        .eq("stripe_subscription_id", subscriptionId as string)
+        .maybeSingle();
+
+      if (data?.user_id) {
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId as string);
+        await syncSubscription(supabase, data.user_id, subscription);
+        console.warn(`Payment failed for user ${data.user_id}, subscription status is now ${subscription.status}`);
+      }
+      break;
+    }
   }
 
   return NextResponse.json({ received: true });
