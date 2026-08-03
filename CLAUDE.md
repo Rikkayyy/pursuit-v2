@@ -50,7 +50,7 @@ User timezone is stored in a cookie and threaded through all date-sensitive logi
 
 ### AI Integration
 
-`POST /api/ai/generate-goal` accepts `{ goalDescription, timeline, experience, dailyTime, constraints }` and calls Claude (`claude-sonnet-4-20250514`) to return a structured JSON plan with `title`, `description`, `milestones[]`, and `tasks[]`. The `/goals/ai` page handles the full UX flow: form → review/edit → activate (which bulk-inserts milestones and tasks).
+`POST /api/ai/generate-goal` accepts `{ goalDescription, timeline, experience, dailyTime, constraints }` and calls Claude (`claude-sonnet-4-6`) to return a structured JSON plan with `title`, `description`, `milestones[]`, and `tasks[]`. The `/goals/ai` page handles the full UX flow: form → review/edit → activate (which bulk-inserts milestones and tasks). Gated behind a Pursuit Pro subscription (Stripe) and rate-limited to 15 generations/user/day — see `ARCHITECTURE_DECISIONS.md` for the reasoning.
 
 ### Capacitor / iOS
 
@@ -123,7 +123,6 @@ MVP is built and deployed. Core features working:
 ## In Progress
 
 - Design pass using Sleek.design components (Home and Goals Overview partially styled, Goal Detail is next)
-- Password reset self-service flow (pages not yet built; manual Supabase dashboard workaround exists)
 - **Security audit** (`SECURITY_AUDIT.md`) — working through findings on the `security-audit` branch:
   - ~~C1~~ — Invalid (proxy.ts is correct for Next.js 16)
   - ~~C2~~ — Fixed (`/api/delete-account` route now calls `adminClient.auth.admin.deleteUser()`)
