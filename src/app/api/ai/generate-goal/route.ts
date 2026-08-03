@@ -1,7 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { isSubscriptionActive } from "@/lib/api/subscriptions";
+import { incrementAndCheckAiUsage, DAILY_AI_GENERATION_LIMIT } from "@/lib/api/ai-usage";
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -47,6 +49,19 @@ export async function POST(req: NextRequest) {
 
     if (!(await isSubscriptionActive(supabase, user.id))) {
       return NextResponse.json({ error: "AI goal planning requires Pursuit Pro" }, { status: 403 });
+    }
+
+    const adminClient = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SECRET_KEY!
+    );
+
+    const { allowed } = await incrementAndCheckAiUsage(adminClient, user.id);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: `You've reached today's limit of ${DAILY_AI_GENERATION_LIMIT} AI generations. Try again tomorrow.` },
+        { status: 429 }
+      );
     }
 
     const { goalDescription, timeline, experience, dailyTime, constraints } =

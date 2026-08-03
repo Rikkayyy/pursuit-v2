@@ -40,6 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Personal Notes
 TODO.md
 SECURITY_AUDIT.md
+ARCHITECTURE_DECISIONS.md
 /features

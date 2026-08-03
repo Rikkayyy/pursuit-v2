@@ -53,15 +53,16 @@ export default function AIGoalPlanner() {
         }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error("Failed to generate plan");
+        throw new Error(data.error || "Failed to generate plan");
       }
 
-      const data = await res.json();
       setPlan(data);
       setStep("review");
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setStep("input");
     }
   };
