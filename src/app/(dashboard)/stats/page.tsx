@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getDailyStats } from "@/lib/stats";
+import { getSafeTimezone } from "@/lib/util";
 import StatsView from "./StatsView";
 
 export default async function StatsPage() {
@@ -15,8 +16,7 @@ export default async function StatsPage() {
   }
 
   const cookieStore = await cookies();
-  const timezone =
-    cookieStore.get("user_timezone")?.value || "America/Chicago";
+  const timezone = getSafeTimezone(cookieStore.get("user_timezone")?.value);
 
   const now = new Date();
   const today = now.toLocaleDateString("en-CA", { timeZone: timezone });

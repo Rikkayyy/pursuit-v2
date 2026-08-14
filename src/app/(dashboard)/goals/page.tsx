@@ -5,6 +5,7 @@ import Link from "next/link";
 import GoalCard from "@/components/features/goals/GoalCard";
 import GoalFilters from "@/components/features/goals/GoalFilters";
 import { getWeeklyHitRate } from "@/lib/weekly-stats";
+import { getSafeTimezone } from "@/lib/util";
 import { Icon } from "@iconify/react";
 
 export default async function GoalsOverview({
@@ -21,7 +22,7 @@ export default async function GoalsOverview({
   }
 
   const cookieStore = await cookies();
-  const timezone = cookieStore.get("user_timezone")?.value || "America/Chicago";
+  const timezone = getSafeTimezone(cookieStore.get("user_timezone")?.value);
 
   const { data: goals } = await supabase
     .from("goals")

@@ -4,6 +4,7 @@ import { getTaskStreaks } from "@/lib/streaks";
 import { cookies } from "next/headers";
 import { getDailyCompletions } from "@/lib/weekly-stats";
 import { getWeeklyHitRate } from "@/lib/weekly-stats";
+import { getSafeTimezone } from "@/lib/util";
 import DailyViewClient from "@/components/features/daily/DailyViewClient";
 
 export default async function DailyView({
@@ -19,7 +20,7 @@ export default async function DailyView({
   }
 
   const cookieStore = await cookies();
-  const timezone = cookieStore.get("user_timezone")?.value || "America/Chicago";
+  const timezone = getSafeTimezone(cookieStore.get("user_timezone")?.value);
   const now = new Date();
   const today = now.toLocaleDateString("en-CA", { timeZone: timezone });
 
