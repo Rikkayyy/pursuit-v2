@@ -18,7 +18,7 @@ export async function createClient() {
               cookieStore.set(name, value, options)
             );
           } catch {
-            // Can be ignored if middleware is refreshing sessions
+            // Safe to ignore — src/proxy.ts refreshes the session cookie on every request.
           }
         },
       },
