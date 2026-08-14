@@ -24,8 +24,8 @@ export default function Signup() {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
       return;
     }
 
@@ -82,9 +82,9 @@ export default function Signup() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={8}
               className="w-full bg-secondary/50 border-2 border-transparent focus:border-primary/30 focus:bg-background h-14 rounded-2xl px-5 font-medium text-base transition-all outline-none"
-              placeholder="At least 6 characters"
+              placeholder="At least 8 characters"
             />
           </div>
 
@@ -97,7 +97,7 @@ export default function Signup() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={8}
               className="w-full bg-secondary/50 border-2 focus:bg-background h-14 rounded-2xl px-5 font-medium text-base transition-all outline-none"
               style={{
                 borderColor: confirmPassword
