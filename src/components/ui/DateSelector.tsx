@@ -57,9 +57,9 @@ export default function DateSelector({
 
       <button
         onClick={() => goToDate(1)}
-        disabled={isFuture}
+        disabled={isToday}
         className={`w-10 h-10 rounded-full bg-secondary flex items-center justify-center active:scale-90 transition-transform tap ${
-          isFuture
+          isToday
             ? "text-muted-foreground/30 cursor-not-allowed"
             : "text-foreground"
         }`}
