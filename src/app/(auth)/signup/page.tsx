@@ -40,7 +40,7 @@ export default function Signup() {
       setError(error.message);
       setLoading(false);
     } else {
-      router.push("/");
+      router.push("/goals/new");
     }
   };
 
