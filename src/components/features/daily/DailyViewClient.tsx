@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import DailyTaskList from "@/components/features/daily/DailyTaskList";
 import AnytimeTask from "@/components/features/daily/AnytimeTask";
@@ -64,6 +64,10 @@ export default function DailyViewClient({
   dailyActivity: DailyActivity[];
 }) {
   const [completionOverrides, setCompletionOverrides] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    setCompletionOverrides({});
+  }, [selectedDate]);
 
   const getEffectiveCompleted = (taskId: string, serverCompleted: boolean) => {
     return completionOverrides[taskId] !== undefined
