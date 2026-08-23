@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { logTask, unlogTask } from "@/lib/api/task-logs";
@@ -15,6 +15,10 @@ export function useTaskToggle(
   const router = useRouter();
   const [localCompleted, setLocalCompleted] = useState<boolean | null>(null);
   const [isPending, setIsPending] = useState(false);
+
+  useEffect(() => {
+    setLocalCompleted(null);
+  }, [date]);
 
   const currentCompleted = localCompleted !== null ? localCompleted : isCompleted;
 
