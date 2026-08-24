@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Icon } from "@iconify/react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -32,62 +33,82 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-sm space-y-6 p-8">
-        <div className="space-y-2 text-center">
-          <h1 className="text-2xl font-bold">Log in to Pursuit</h1>
-          <p className="text-sm text-gray-500">Welcome back</p>
+    <div className="min-h-screen bg-background text-foreground flex items-center justify-center font-sans selection:bg-primary/20">
+      <div className="w-full max-w-sm space-y-8 p-8">
+        <div className="text-center space-y-2">
+          <div
+            className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl mb-4"
+            style={{ backgroundColor: "#ff0055", boxShadow: "0 8px 25px rgba(255, 0, 85, 0.3)" }}
+          >
+            <Icon icon="solar:target-bold" />
+          </div>
+          <h1 className="text-2xl font-heading font-extrabold">Welcome back</h1>
+          <p className="text-sm text-muted-foreground">Log in to continue your pursuit</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-2 px-1">
               Email
             </label>
             <input
-              id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full bg-secondary/50 border-2 border-transparent focus:border-primary/30 focus:bg-background h-14 rounded-2xl px-5 font-medium text-base transition-all outline-none"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
+            <div className="flex items-center justify-between mb-2 px-1">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                Password
+              </label>
+              <Link href="/forgot-password" className="text-[10px] font-bold uppercase tracking-widest hover:underline" style={{ color: "#ff0055" }}>
+                Forgot?
+              </Link>
+            </div>
             <input
-              id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full bg-secondary/50 border-2 border-transparent focus:border-primary/30 focus:bg-background h-14 rounded-2xl px-5 font-medium text-base transition-all outline-none"
               placeholder="Your password"
             />
           </div>
 
           {error && (
-            <p className="text-sm text-red-500">{error}</p>
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive p-3 rounded-2xl text-sm font-medium">
+              {error}
+            </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-black py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+            className="w-full h-14 rounded-2xl text-white font-heading font-extrabold text-base active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            style={{
+              backgroundColor: "#ff0055",
+              boxShadow: "0 8px 25px rgba(255, 0, 85, 0.3)",
+            }}
           >
             {loading ? "Logging in..." : "Log in"}
+            {!loading && <Icon icon="solar:arrow-right-linear" className="text-lg" />}
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500">
+        <p className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-medium text-black hover:underline">
+          <Link href="/signup" className="font-bold hover:underline" style={{ color: "#ff0055" }}>
             Sign up
           </Link>
+        </p>
+
+        <p className="text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+          GPS Method: Goal • Plan • System
         </p>
       </div>
     </div>

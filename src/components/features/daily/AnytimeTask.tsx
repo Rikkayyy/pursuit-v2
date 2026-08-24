@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { Icon } from "@iconify/react";
+import { useTaskToggle } from "@/hooks/useTaskToggle";
 
 type AnytimeTaskProps = {
   item: {
@@ -17,69 +16,64 @@ type AnytimeTaskProps = {
     isCompleted: boolean;
   };
   today: string;
+  onToggle?: (taskId: string, newState: boolean) => void;
 };
 
-export default function AnytimeTask({ item, today }: AnytimeTaskProps) {
-  const supabase = createClient();
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-
-  const toggleTask = async () => {
-    setLoading(true);
-
-    if (item.isCompleted) {
-      await supabase
-        .from("task_logs")
-        .delete()
-        .eq("task_id", item.task.id)
-        .eq("date", today);
-    } else {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      await supabase.from("task_logs").insert({
-        task_id: item.task.id,
-        user_id: user.id,
-        date: today,
-      });
-    }
-
-    setLoading(false);
-    router.refresh();
-  };
+export default function AnytimeTask({ item, today, onToggle }: AnytimeTaskProps) {
+  const { isCompleted, isPending, toggle } = useTaskToggle(
+    item.task.id,
+    item.isCompleted,
+    today,
+    onToggle
+  );
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-xl border p-3 transition-all ${
-        item.isCompleted ? "bg-gray-50 border-gray-100" : "bg-white border-gray-200"
+      className={`bg-card rounded-2xl p-4 flex items-center gap-4 transition-all relative overflow-hidden ${
+        isCompleted
+          ? "shadow-none opacity-80 grayscale-[0.3]"
+          : "shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] active:scale-[0.98] cursor-pointer"
       }`}
     >
-      <button
-        onClick={toggleTask}
-        disabled={loading}
-        className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all"
+      <div
+        className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl"
         style={{
-          borderColor: item.isCompleted ? item.goalColor : "#d1d5db",
-          backgroundColor: item.isCompleted ? item.goalColor : "transparent",
+          backgroundColor: isCompleted ? `${item.goalColor}66` : item.goalColor,
+        }}
+      />
+
+      <button
+        onClick={toggle}
+        disabled={isPending}
+        className="w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all"
+        style={{
+          borderColor: isCompleted ? item.goalColor : "var(--muted-foreground)",
+          backgroundColor: isCompleted ? item.goalColor : "transparent",
         }}
       >
-        {item.isCompleted && <span className="text-white text-xs">✓</span>}
+        {isCompleted && (
+          <Icon icon="solar:check-read-bold" className="text-white text-base" />
+        )}
       </button>
+
       <div className="flex-1">
-        <span
-          className={`text-sm ${
-            item.isCompleted ? "text-gray-400 line-through" : "text-black"
+        <h4
+          className={`font-bold text-base leading-tight ${
+            isCompleted
+              ? "text-muted-foreground line-through decoration-muted-foreground/40"
+              : "text-foreground"
           }`}
         >
           {item.task.title}
-        </span>
+        </h4>
       </div>
+
       <div className="flex items-center gap-2">
         <div
           className="h-2 w-2 rounded-full"
           style={{ backgroundColor: item.goalColor }}
         />
-        <span className="text-xs text-gray-700">{item.goalTitle}</span>
+        <span className="text-xs text-muted-foreground font-medium">{item.goalTitle}</span>
       </div>
     </div>
   );

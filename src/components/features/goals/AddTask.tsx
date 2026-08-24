@@ -3,72 +3,58 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { Icon } from "@iconify/react";
+import TaskForm from "@/components/features/systems/TaskForm";
 
-export default function AddTask({ goalId, nextOrder }: { goalId: string; nextOrder: number }) {
-  const [title, setTitle] = useState("");
-  const [type, setType] = useState<"recurring" | "one_time">("recurring");
-  const [frequency, setFrequency] = useState<"daily" | "weekly" | "specific_days">("daily");
-  const [loading, setLoading] = useState(false);
+export default function AddTask({
+  goalId,
+  nextOrder,
+  goalColor = "#ff0055",
+}: {
+  goalId: string;
+  nextOrder: number;
+  goalColor?: string;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const supabase = createClient();
   const router = useRouter();
 
-  const handleAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return;
-    setLoading(true);
-
-    await supabase.from("tasks").insert({
-      goal_id: goalId,
-      title: title.trim(),
-      type,
-      frequency: type === "recurring" ? frequency : null,
-      sort_order: nextOrder,
-    });
-
-    setTitle("");
-    setLoading(false);
-    router.refresh();
-  };
+  if (!isExpanded) {
+    return (
+      <button
+        onClick={() => setIsExpanded(true)}
+        className="w-full mt-4 border border-dashed border-muted-foreground/20 rounded-2xl py-3 px-4 flex items-center justify-center gap-2 text-muted-foreground/40 hover:bg-primary/5 hover:border-primary/20 hover:text-primary transition-all group active:scale-[0.98] tap"
+      >
+        <div className="w-6 h-6 rounded-full border border-dashed border-muted-foreground/30 flex items-center justify-center group-hover:border-primary/40 group-hover:bg-primary/10">
+          <Icon
+            icon="hugeicons:add-01"
+            className="text-sm group-hover:scale-125 transition-transform"
+          />
+        </div>
+        <span className="text-[10px] font-black uppercase tracking-[0.15em]">
+          Add a system
+        </span>
+      </button>
+    );
+  }
 
   return (
-    <form onSubmit={handleAdd} className="mt-3 space-y-2">
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Add a system..."
-          className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-        />
-        <button
-          type="submit"
-          disabled={loading || !title.trim()}
-          className="rounded-lg bg-black px-3 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
-        >
-          Add
-        </button>
-      </div>
-      <div className="flex gap-2">
-        <select
-          value={type}
-          onChange={(e) => setType(e.target.value as "recurring" | "one_time")}
-          className="rounded-md border border-gray-200 px-2 py-1 text-xs focus:border-black focus:outline-none"
-        >
-          <option value="recurring">Recurring</option>
-          <option value="one_time">One-time</option>
-        </select>
-        {type === "recurring" && (
-          <select
-            value={frequency}
-            onChange={(e) => setFrequency(e.target.value as "daily" | "weekly" | "specific_days")}
-            className="rounded-md border border-gray-200 px-2 py-1 text-xs focus:border-black focus:outline-none"
-          >
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="specific_days">Specific Days</option>
-          </select>
-        )}
-      </div>
-    </form>
+    <div className="mt-4">
+      <TaskForm
+        goalColor={goalColor}
+        onSave={async (data) => {
+          await supabase.from("tasks").insert({
+            goal_id: goalId,
+            title: data.title,
+            type: data.type,
+            frequency: data.type === "recurring" ? data.frequency : null,
+            sort_order: nextOrder,
+          });
+          setIsExpanded(false);
+          router.refresh();
+        }}
+        onCancel={() => setIsExpanded(false)}
+      />
+    </div>
   );
 }

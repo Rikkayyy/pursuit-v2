@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type Counts = {
   active: number;
@@ -28,7 +28,7 @@ export default function GoalFilters({
   };
 
   return (
-    <div className="mt-4 flex gap-2">
+    <div className="flex gap-2">
       {FILTERS.map((f) => {
         const count = counts[f.key as keyof Counts];
         const isActive = current === f.key;
@@ -37,10 +37,10 @@ export default function GoalFilters({
           <button
             key={f.key}
             onClick={() => handleFilter(f.key)}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+            className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all active:scale-95 tap ${
               isActive
-                ? "bg-black text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                : "bg-secondary text-muted-foreground hover:bg-secondary/80"
             }`}
           >
             {f.label} {count > 0 && <span className="ml-1">{count}</span>}
