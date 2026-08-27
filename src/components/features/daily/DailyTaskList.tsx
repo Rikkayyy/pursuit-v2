@@ -8,6 +8,7 @@ type DailyTask = {
     id: string;
     title: string;
     type: string;
+    frequency: string | null;
     goal_id: string;
   };
   goalTitle: string;
