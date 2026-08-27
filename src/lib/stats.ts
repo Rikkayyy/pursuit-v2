@@ -19,14 +19,9 @@ function getExpectedCompletions(task: TaskForStats, date: string): number {
 
   if (task.frequency === "daily") return 1;
 
-  if (task.frequency === "weekly") {
+  if (task.frequency === "specific_days") {
     const day = new Date(date + "T12:00:00").getDay();
-    return day === 1 ? 1 : 0; // Monday
-  }
-
-  if (task.frequency === "specific_days" && task.scheduled_days) {
-    const day = new Date(date + "T12:00:00").getDay();
-    return task.scheduled_days.includes(day) ? 1 : 0;
+    return task.scheduled_days?.includes(day) ? 1 : 0;
   }
 
   return 0;

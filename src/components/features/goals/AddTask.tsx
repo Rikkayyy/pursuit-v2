@@ -48,6 +48,7 @@ export default function AddTask({
             title: data.title,
             type: data.type,
             frequency: data.type === "recurring" ? data.frequency : null,
+            scheduled_days: data.type === "recurring" ? data.scheduled_days : null,
             sort_order: nextOrder,
           });
           setIsExpanded(false);

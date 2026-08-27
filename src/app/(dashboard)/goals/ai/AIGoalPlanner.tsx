@@ -287,7 +287,7 @@ export default function AIGoalPlanner() {
                       className="w-full bg-transparent font-bold text-foreground outline-none"
                     />
                     <div className="flex items-center gap-2 mt-1">
-                      {(["daily", "weekly"] as const).map((f) => (
+                      {(["daily", "specific_days"] as const).map((f) => (
                         <button
                           key={f}
                           onClick={() => { updateTask(i, "type", "recurring"); updateTask(i, "frequency", f); }}
@@ -300,7 +300,7 @@ export default function AIGoalPlanner() {
                             backgroundColor: t.type === "recurring" && t.frequency === f ? color : undefined,
                           }}
                         >
-                          {f}
+                          {f === "daily" ? "Daily" : "Specific Days"}
                         </button>
                       ))}
                       <button

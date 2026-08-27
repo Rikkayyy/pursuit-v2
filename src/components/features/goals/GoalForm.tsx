@@ -18,7 +18,8 @@ const COLORS = [
 type TaskInput = {
   title: string;
   type: "recurring" | "one_time";
-  frequency: "daily" | "weekly" | "specific_days";
+  frequency: "daily" | "specific_days";
+  scheduled_days: number[] | null;
 };
 
 type MilestoneInput = {
@@ -79,7 +80,7 @@ export default function GoalForm() {
   const supabase = createClient();
 
   const addTask = () => {
-    setTasks([...tasks, { title: "", type: "recurring", frequency: "daily" }]);
+    setTasks([...tasks, { title: "", type: "recurring", frequency: "daily", scheduled_days: null }]);
   };
 
   const updateTask = (index: number, field: keyof TaskInput, value: string) => {
@@ -148,6 +149,7 @@ export default function GoalForm() {
       title: t.title.trim(),
       type: t.type,
       frequency: t.type === "recurring" ? t.frequency : null,
+      scheduled_days: t.type === "recurring" ? t.scheduled_days : null,
       sort_order: i,
     }));
 
@@ -322,7 +324,7 @@ export default function GoalForm() {
                       <span className="flex items-center gap-1">
                         <Icon icon="solar:calendar-bold" style={{ color: `${color}99` }} />
                         {task.type === "recurring"
-                          ? task.frequency === "daily" ? "Daily" : task.frequency === "weekly" ? "Weekly" : "Custom Days"
+                          ? task.frequency === "daily" ? "Daily" : task.frequency === "specific_days" ? "Specific Days" : "Custom Days"
                           : "One-time"}
                       </span>
                     </div>
