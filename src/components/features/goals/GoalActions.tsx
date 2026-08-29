@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import type { Goal } from "@/types";
 import { Icon } from "@iconify/react";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export default function GoalActions({ goal }: { goal: Goal }) {
   const [showMenu, setShowMenu] = useState(false);
@@ -14,6 +15,7 @@ export default function GoalActions({ goal }: { goal: Goal }) {
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
   const router = useRouter();
+  const { confirm, dialog } = useConfirm();
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +35,7 @@ export default function GoalActions({ goal }: { goal: Goal }) {
   };
 
   const handleArchive = async () => {
-    if (!confirm("Archive this goal? You can restore it later.")) return;
+    if (!(await confirm({ title: "Archive this goal?", description: "You can restore it later." }))) return;
 
     await supabase
       .from("goals")
@@ -44,7 +46,7 @@ export default function GoalActions({ goal }: { goal: Goal }) {
   };
 
   const handleComplete = async () => {
-    if (!confirm("Mark this goal as completed?")) return;
+    if (!(await confirm({ title: "Mark this goal as completed?" }))) return;
 
     await supabase
       .from("goals")
@@ -55,7 +57,15 @@ export default function GoalActions({ goal }: { goal: Goal }) {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Delete this goal permanently? This will remove all milestones and tasks.")) return;
+    if (
+      !(await confirm({
+        title: "Delete this goal permanently?",
+        description: "This will remove all milestones and tasks.",
+        destructive: true,
+        confirmLabel: "Delete",
+      }))
+    )
+      return;
 
     await supabase
       .from("goals")
@@ -66,7 +76,13 @@ export default function GoalActions({ goal }: { goal: Goal }) {
   };
 
   const handleReactivate = async () => {
-    if (!confirm("Reactivate this goal? It will move back to your active goals.")) return;
+    if (
+      !(await confirm({
+        title: "Reactivate this goal?",
+        description: "It will move back to your active goals.",
+      }))
+    )
+      return;
 
     await supabase
       .from("goals")
@@ -202,6 +218,8 @@ export default function GoalActions({ goal }: { goal: Goal }) {
           </div>
         </>
       )}
+
+      {dialog}
     </div>
   );
 }

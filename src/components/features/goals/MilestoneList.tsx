@@ -7,6 +7,7 @@ import { Icon } from "@iconify/react";
 import type { Milestone } from "@/types";
 import { updateMilestone, deleteMilestone as deleteMilestoneApi } from "@/lib/api/milestones";
 import { useMilestoneToggle } from "@/hooks/useMilestoneToggle";
+import { useConfirm } from "@/hooks/useConfirm";
 
 function MilestoneItem({
   milestone,
@@ -91,6 +92,7 @@ export default function MilestoneList({
   const [loading, setLoading] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
+  const { confirm, dialog } = useConfirm();
 
   const startEdit = (milestone: Milestone) => {
     setEditingId(milestone.id);
@@ -116,7 +118,7 @@ export default function MilestoneList({
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this milestone?")) return;
+    if (!(await confirm({ title: "Delete this milestone?", destructive: true, confirmLabel: "Delete" }))) return;
     setLoading(id);
     try {
       await deleteMilestoneApi(supabase, id);
@@ -132,6 +134,7 @@ export default function MilestoneList({
   }
 
   return (
+    <>
     <div className="space-y-3">
       {milestones.map((milestone) => {
         if (editingId === milestone.id) {
@@ -213,5 +216,7 @@ export default function MilestoneList({
         );
       })}
     </div>
+    {dialog}
+    </>
   );
 }

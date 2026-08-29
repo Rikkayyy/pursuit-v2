@@ -7,6 +7,7 @@ export async function createTask(
     title: string;
     type: string;
     frequency?: string | null;
+    scheduled_days?: number[] | null;
     sort_order: number;
   }
 ) {
@@ -21,6 +22,7 @@ export async function createTasks(
     title: string;
     type: string;
     frequency?: string | null;
+    scheduled_days?: number[] | null;
     sort_order: number;
   }[]
 ) {
@@ -36,6 +38,7 @@ export async function updateTask(
     title?: string;
     type?: string;
     frequency?: string | null;
+    scheduled_days?: number[] | null;
   }
 ) {
   const { error } = await supabase

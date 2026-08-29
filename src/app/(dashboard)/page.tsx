@@ -59,19 +59,23 @@ export default async function DailyView({
   const completedTaskIds = new Set(todayLogs?.map((log) => log.task_id) || []);
 
   // Collect task IDs for wave 2
-  const allRecurringTaskIds: string[] = [];
+    const allRecurringTasks: { id: string; frequency: string | null; scheduled_days: number[] | null }[] = [];
   goals?.forEach((goal) => {
     goal.tasks?.forEach((task) => {
       if (task.type === "recurring") {
-        allRecurringTaskIds.push(task.id);
+        allRecurringTasks.push({
+          id: task.id,
+          frequency: task.frequency,
+          scheduled_days: task.scheduled_days ?? null,
+        });
       }
     });
   });
 
   // === WAVE 2: Fetch dependent data in parallel ===
   const [streaks, dailyActivity, ...goalStatsResults] = await Promise.all([
-    getTaskStreaks(supabase, allRecurringTaskIds, timezone),
-    getDailyCompletions(supabase, allRecurringTaskIds, timezone),
+    getTaskStreaks(supabase, allRecurringTasks, timezone),
+    getDailyCompletions(supabase, allRecurringTasks.map((t) => t.id), timezone),
     ...(goals || [])
       .filter((goal) => goal.tasks && goal.tasks.length > 0)
       .map((goal) => 
@@ -112,10 +116,8 @@ export default async function DailyView({
       if (task.type === "recurring") {
         if (task.frequency === "daily") {
           isDueToday = true;
-        } else if (task.frequency === "weekly") {
-          isDueToday = dayOfWeek === 1; // Mondays
-        } else if (task.frequency === "specific_days" && task.scheduled_days) {
-          isDueToday = task.scheduled_days.includes(dayOfWeek);
+        } else if (task.frequency === "specific_days") {
+          isDueToday = task.scheduled_days?.includes(dayOfWeek) ?? false;
         }
       } else if (task.type === "one_time") {
         isDueToday = task.due_date === selectedDate;

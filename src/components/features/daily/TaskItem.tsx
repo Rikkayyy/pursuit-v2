@@ -8,6 +8,7 @@ type DailyTask = {
     id: string;
     title: string;
     type: string;
+    frequency: string | null;
     goal_id: string;
   };
   goalTitle: string;
@@ -31,6 +32,8 @@ export default function TaskItem({
     today,
     onToggle
   );
+
+  const streakUnit = item.task.frequency === "specific_days" ? "Week" : "Day";
 
   return (
     <div
@@ -83,19 +86,19 @@ export default function TaskItem({
           {item.streak > 0 && isCompleted && (
             <span className="flex items-center gap-1.5 bg-chart-2/10 text-chart-2 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest border border-chart-2/20">
               <Icon icon="solar:fire-bold" className="text-xs" />
-              {item.streak} Day Streak
+              {item.streak} {streakUnit} Streak
             </span>
           )}
           {item.streak > 0 && !isCompleted && item.streak >= 7 && (
             <span className="flex items-center gap-1.5 bg-chart-2 text-white px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-lg shadow-chart-2/30 animate-pulse">
               <Icon icon="solar:fire-bold" className="text-sm" />
-              {item.streak} Day Ultra
+              {item.streak} {streakUnit} Ultra
             </span>
           )}
           {item.streak > 0 && !isCompleted && item.streak < 7 && (
             <span className="flex items-center gap-1 text-muted-foreground/60 text-[10px] font-bold tracking-tight">
               <Icon icon="solar:fire-linear" className="text-xs" />
-              {item.streak} day streak
+              {item.streak} {streakUnit.toLowerCase()} streak
             </span>
           )}
           {item.task.type === "one_time" && (

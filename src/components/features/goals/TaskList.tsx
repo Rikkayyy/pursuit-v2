@@ -7,15 +7,25 @@ import { Icon } from "@iconify/react";
 import type { Task } from "@/types";
 import TaskForm from "@/components/features/systems/TaskForm";
 import { updateTask as updateTaskApi, deleteTask as deleteTaskApi } from "@/lib/api/tasks";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export default function TaskList({ tasks, goalColor }: { tasks: Task[]; goalColor: string }) {
   const supabase = createClient();
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirm();
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this task? This will also remove all its logs.")) return;
+    if (
+      !(await confirm({
+        title: "Delete this task?",
+        description: "This will also remove all its logs.",
+        destructive: true,
+        confirmLabel: "Delete",
+      }))
+    )
+      return;
     setLoading(id);
     try {
       await deleteTaskApi(supabase, id);
@@ -31,6 +41,7 @@ export default function TaskList({ tasks, goalColor }: { tasks: Task[]; goalColo
   }
 
   return (
+    <>
     <div className="space-y-3">
       {tasks.map((task) => {
         if (editingId === task.id) {
@@ -41,7 +52,8 @@ export default function TaskList({ tasks, goalColor }: { tasks: Task[]; goalColo
               initialData={{
                 title: task.title,
                 type: task.type,
-                frequency: (task.frequency as "daily" | "weekly" | "specific_days") || "daily",
+                frequency: (task.frequency as "daily" | "specific_days") || "daily",
+                scheduled_days: task.scheduled_days ?? null,
               }}
               headerLabel="Edit System"
               headerIcon="solar:pen-bold"
@@ -53,6 +65,7 @@ export default function TaskList({ tasks, goalColor }: { tasks: Task[]; goalColo
                     title: data.title,
                     type: data.type,
                     frequency: data.type === "recurring" ? data.frequency : null,
+                    scheduled_days: data.type === "recurring" ? data.scheduled_days : null,
                   });
                 } catch (error) {
                   console.error("Failed to update task:", error);
@@ -86,11 +99,9 @@ export default function TaskList({ tasks, goalColor }: { tasks: Task[]; goalColo
                 <span className="flex items-center gap-1">
                   <Icon icon="solar:calendar-bold" style={{ color: `${goalColor}99` }} />
                   {task.type === "recurring"
-                    ? task.frequency === "specific_days" && task.scheduled_days
-                      ? task.scheduled_days.map((d) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d]).join(", ")
-                      : task.frequency === "daily"
+                    ? task.frequency === "daily"
                       ? "Every Day"
-                      : "Weekly"
+                      : "Specific Days"
                     : "One-time Task"}
                 </span>
               </div>
@@ -106,5 +117,7 @@ export default function TaskList({ tasks, goalColor }: { tasks: Task[]; goalColo
         );
       })}
     </div>
+    {dialog}
+    </>
   );
 }

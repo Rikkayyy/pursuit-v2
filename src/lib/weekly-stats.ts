@@ -14,14 +14,10 @@ function getExpectedCompletions(task: TaskForStats, dates: string[]): number {
     return dates.length;
   }
 
-  if (task.frequency === "weekly") {
-    return 1;
-  }
-
   if (task.frequency === "specific_days" && task.scheduled_days) {
     return dates.reduce((count, dateStr) => {
-      const day = new Date(dateStr + "T12:00:00").getDay();
-      return count + (task.scheduled_days!.includes(day) ? 1 : 0);
+      const dayOfWeek = new Date(dateStr + "T12:00:00").getDay();
+      return count + (task.scheduled_days!.includes(dayOfWeek) ? 1 : 0);
     }, 0);
   }
 

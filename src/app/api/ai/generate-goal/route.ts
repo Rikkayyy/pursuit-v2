@@ -11,7 +11,7 @@ const client = new Anthropic({
 
 const SYSTEM_PROMPT = `You are a goal planning assistant for Pursuit, a goal-tracking app based on the GPS method (Goal, Plan, System).
 
-When a user describes a goal, generate a structured plan with milestones and daily/weekly tasks.
+When a user describes a goal, generate a structured plan with milestones and daily or specific-days-of-the-week tasks.
 
 You MUST respond with ONLY valid JSON in this exact format, no other text:
 
@@ -23,15 +23,15 @@ You MUST respond with ONLY valid JSON in this exact format, no other text:
     { "title": "Milestone 2 — ordered by progression" }
   ],
   "tasks": [
-    { "title": "Daily or weekly task", "type": "recurring", "frequency": "daily" },
-    { "title": "Another task", "type": "recurring", "frequency": "weekly" },
+    { "title": "Daily or specific-days task", "type": "recurring", "frequency": "daily" },
+    { "title": "Another task", "type": "recurring", "frequency": "specific_days" },
     { "title": "A one-time setup task", "type": "one_time", "frequency": "daily" }
   ]
 }
 
 Rules:
 - Generate 3-6 milestones ordered from earliest to latest
-- Generate 3-6 tasks, mostly recurring (daily or weekly)
+- Generate 3-6 tasks, mostly recurring (daily or specific days of the week)
 - Include 1-2 one-time tasks if setup steps are needed
 - Milestones should be measurable and progressively harder
 - Tasks should be specific and actionable with realistic time commitments
