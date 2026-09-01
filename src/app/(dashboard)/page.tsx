@@ -6,6 +6,7 @@ import { getDailyCompletions } from "@/lib/weekly-stats";
 import { getWeeklyHitRate } from "@/lib/weekly-stats";
 import { getSafeTimezone } from "@/lib/util";
 import DailyViewClient from "@/components/features/daily/DailyViewClient";
+import { getWeekStart } from "@/lib/week";
 
 export default async function DailyView({
     searchParams,
@@ -27,10 +28,11 @@ export default async function DailyView({
   const { date: dateParam } = await searchParams;
   const selectedDate = dateParam || today;
   const dayOfWeek = new Date(selectedDate + "T12:00:00").getDay();
+  const weekStartOfSelectedDate = getWeekStart(selectedDate);
   const isToday = selectedDate === today;
 
   // === WAVE 1: Fetch independent data in parallel ===
-  const [{ data: goals }, { data: todayLogs }] = await Promise.all([
+  const [{ data: goals }, { data: relevantLogs }] = await Promise.all([
     supabase
       .from("goals")
       .select(`
@@ -51,12 +53,18 @@ export default async function DailyView({
       .eq("status", "active"),
     supabase
       .from("task_logs")
-      .select("task_id")
+      .select("task_id, date")
       .eq("user_id", user.id)
-      .eq("date", selectedDate),
+      .in("date", [selectedDate, weekStartOfSelectedDate]), // Fetch logs for both selected date and week start
   ]);
 
-  const completedTaskIds = new Set(todayLogs?.map((log) => log.task_id) || []);
+  const completedTaskIds = new Set(
+    relevantLogs?.filter((log) => log.date === selectedDate).map((log) => log.task_id) || []
+  );
+
+  const weeklyCompletedTaskIds = new Set(
+    relevantLogs?.filter((log) => log.date === weekStartOfSelectedDate).map((log) => log.task_id) || []
+  );
 
   // Collect task IDs for wave 2
     const allRecurringTasks: { id: string; frequency: string | null; scheduled_days: number[] | null }[] = [];
@@ -114,7 +122,7 @@ export default async function DailyView({
       let isDueToday = false;
 
       if (task.type === "recurring") {
-        if (task.frequency === "daily") {
+        if (task.frequency === "daily" || task.frequency === "weekly") {
           isDueToday = true;
         } else if (task.frequency === "specific_days") {
           isDueToday = task.scheduled_days?.includes(dayOfWeek) ?? false;
@@ -128,7 +136,10 @@ export default async function DailyView({
           task,
           goalTitle: goal.title,
           goalColor: goal.color,
-          isCompleted: completedTaskIds.has(task.id),
+          isCompleted: 
+            task.frequency === "weekly" 
+              ? weeklyCompletedTaskIds.has(task.id) 
+              : completedTaskIds.has(task.id),
           streak: streaks[task.id] || 0,
         });
       }

@@ -6,7 +6,7 @@ import { Icon } from "@iconify/react";
 type TaskFormData = {
   title: string;
   type: "recurring" | "one_time";
-  frequency: "daily" | "specific_days";
+  frequency: "daily" | "weekly" | "specific_days";
   scheduled_days: number[] | null;
 };
 
@@ -33,7 +33,7 @@ export default function TaskForm({
 }) {
   const [title, setTitle] = useState(initialData?.title || "");
   const [type, setType] = useState<"recurring" | "one_time">(initialData?.type || "recurring");
-  const [frequency, setFrequency] = useState<"daily" | "specific_days">(
+  const [frequency, setFrequency] = useState<"daily" | "weekly" | "specific_days">(
     initialData?.frequency || "daily"
   );
   const [scheduledDays, setScheduledDays] = useState<number[]>(
@@ -123,7 +123,7 @@ export default function TaskForm({
             Frequency
           </span>
           <div className="flex gap-2">
-            {(["daily", "specific_days"] as const).map((f) => (
+            {(["daily", "weekly", "specific_days"] as const).map((f) => (
               <button
                 key={f}
                 type="button"
@@ -133,7 +133,7 @@ export default function TaskForm({
                 }`}
                 style={{ backgroundColor: frequency === f ? goalColor : undefined }}
               >
-                {f === "daily" ? "Daily" : "Specific Days"}
+                {f === "daily" ? "Daily" : f === "weekly" ? "Weekly" : "Specific Days"}
               </button>
             ))}
           </div>

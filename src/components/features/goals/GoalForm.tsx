@@ -18,7 +18,7 @@ const COLORS = [
 type TaskInput = {
   title: string;
   type: "recurring" | "one_time";
-  frequency: "daily" | "specific_days";
+  frequency: "daily" | "weekly" | "specific_days";
   scheduled_days: number[] | null;
 };
 
@@ -324,7 +324,9 @@ export default function GoalForm() {
                       <span className="flex items-center gap-1">
                         <Icon icon="solar:calendar-bold" style={{ color: `${color}99` }} />
                         {task.type === "recurring"
-                          ? task.frequency === "daily" ? "Daily" : task.frequency === "specific_days" ? "Specific Days" : "Custom Days"
+                          ? task.frequency === "daily" ? "Daily"
+                            : task.frequency === "weekly" ? "Weekly"
+                            : "Specific Days"
                           : "One-time"}
                       </span>
                     </div>

@@ -2,6 +2,7 @@
 
 import { Icon } from "@iconify/react";
 import { useTaskToggle } from "@/hooks/useTaskToggle";
+import { getWeekStart } from "@/lib/week";
 
 type DailyTask = {
   task: {
@@ -26,14 +27,16 @@ export default function TaskItem({
   today: string;
   onToggle?: (taskId: string, newState: boolean) => void;
 }) {
+  const effectiveDate = item.task.frequency === "weekly" ? getWeekStart(today) : today;
+
   const { isCompleted, isPending, toggle } = useTaskToggle(
     item.task.id,
     item.isCompleted,
-    today,
+    effectiveDate,
     onToggle
   );
 
-  const streakUnit = item.task.frequency === "specific_days" ? "Week" : "Day";
+  const streakUnit = item.task.frequency === "specific_days" || item.task.frequency === "weekly" ? "Week" : "Day";
 
   return (
     <div

@@ -1,4 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
+import { getWeekStart } from "@/lib/week";
 
 type TaskForStats = {
   id: string;
@@ -18,6 +19,10 @@ function getExpectedCompletions(task: TaskForStats, date: string): number {
   if (task.type !== "recurring") return 0;
 
   if (task.frequency === "daily") return 1;
+
+  if (task.frequency === "weekly") {
+    return date === getWeekStart(date) ? 1 : 0;
+  }
 
   if (task.frequency === "specific_days") {
     const day = new Date(date + "T12:00:00").getDay();

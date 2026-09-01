@@ -52,7 +52,7 @@ export default function TaskList({ tasks, goalColor }: { tasks: Task[]; goalColo
               initialData={{
                 title: task.title,
                 type: task.type,
-                frequency: (task.frequency as "daily" | "specific_days") || "daily",
+                frequency: (task.frequency as "daily" | "weekly" | "specific_days") || "daily",
                 scheduled_days: task.scheduled_days ?? null,
               }}
               headerLabel="Edit System"
@@ -101,6 +101,8 @@ export default function TaskList({ tasks, goalColor }: { tasks: Task[]; goalColo
                   {task.type === "recurring"
                     ? task.frequency === "daily"
                       ? "Every Day"
+                      : task.frequency === "weekly"
+                      ? "Weekly"
                       : "Specific Days"
                     : "One-time Task"}
                 </span>

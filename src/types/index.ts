@@ -1,6 +1,6 @@
 export type GoalStatus = 'active' | 'completed' | 'archived';
 export type TaskType = 'recurring' | 'one_time';
-export type Frequency = 'daily' | 'specific_days' | 'monthly' | 'yearly';
+export type Frequency = 'daily' | 'weekly' | 'specific_days';
 
 export interface Goal {
     id: string;
