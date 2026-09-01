@@ -1,4 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
+import { getWeekStart, formatDate } from "@/lib/week";
 
 export function countStreak(dates: string[], todayStr: string): number {
   const dateSet = new Set(dates);
@@ -20,6 +21,30 @@ export function countStreak(dates: string[], todayStr: string): number {
     }
 
     checkDate.setDate(checkDate.getDate() - 1);
+  }
+
+  return streak;
+}
+
+function countWeeklyStreak(dates: string[], todayStr: string): number {
+  const dateSet = new Set(dates);
+  const weekStartDate = new Date(getWeekStart(todayStr) + "T12:00:00");
+
+  let streak = 0;
+  let isCurrentWeek = true;
+
+  for (let w = 0; w < 104; w++) {
+    const completedThisWeek = dateSet.has(formatDate(weekStartDate));
+
+    if (completedThisWeek) {
+      streak++;
+    } else if (!isCurrentWeek) {
+      break;
+    }
+    // else: current week hasn't finished yet, so don't break the streak
+
+    isCurrentWeek = false;
+    weekStartDate.setDate(weekStartDate.getDate() - 7);
   }
 
   return streak;
@@ -117,6 +142,8 @@ export async function getTaskStreaks(
     const logs = grouped[task.id] || [];
     streaks[task.id] = task.frequency === "specific_days"
     ? countSpecificDaysStreak(logs, todayStr, task.scheduled_days || [])
+    : task.frequency === "weekly"
+    ? countWeeklyStreak(logs, todayStr)
     : countStreak(logs, todayStr);
   }
 
