@@ -142,6 +142,18 @@ export default async function Settings() {
           })()}
         </section>
 
+        {/* Legal */}
+        <section className="bg-card rounded-3xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+          <Link href="/privacy" className="p-5 flex items-center gap-3 active:bg-secondary transition-colors border-b border-border/50">
+            <Icon icon="solar:shield-check-linear" className="text-foreground text-xl" />
+            <span className="text-sm font-medium">Privacy Policy</span>
+          </Link>
+          <Link href="/terms" className="p-5 flex items-center gap-3 active:bg-secondary transition-colors">
+            <Icon icon="solar:document-text-linear" className="text-foreground text-xl" />
+            <span className="text-sm font-medium">Terms of Service</span>
+          </Link>
+        </section>
+
         {/* Actions */}
         <section className="bg-card rounded-3xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
           <div className="p-5 flex items-center gap-3 active:bg-secondary transition-colors cursor-pointer border-b border-border/50">

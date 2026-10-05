@@ -18,11 +18,12 @@ Pursuit is a goal-tracking app built on the **GPS Method** (Goal → Plan → Sy
 
 ### Routing
 
-The App Router has two route groups:
+The App Router has three route groups:
 - `(auth)/` — unauthenticated pages: `welcome`, `login`, `signup`, `forgot-password`, `reset-password`
-- `(dashboard)/` — protected pages: `/` (daily view), `/goals`, `/goals/[id]`, `/goals/new`, `/goals/ai`, `/settings`
+- `(dashboard)/` — protected pages: `/` (daily view), `/goals`, `/goals/[id]`, `/goals/new`, `/goals/ai`, `/settings`, `/stats`
+- `(legal)/` — public pages: `/privacy` (Privacy Policy), `/terms` (Terms of Service)
 
-Auth protection is enforced in `src/proxy.ts` (Next.js 16 uses `proxy.ts` + `export function proxy()` — `middleware.ts` is the deprecated convention) via `src/lib/supabase/middleware.ts` — unauthenticated users are redirected to `/welcome`.
+Auth protection is enforced in `src/proxy.ts` (Next.js 16 uses `proxy.ts` + `export function proxy()` — `middleware.ts` is the deprecated convention) via `src/lib/supabase/middleware.ts` — unauthenticated users are redirected to `/welcome`. Public pages are excluded via the `matcher` regex in `src/proxy.ts` — a new public route must be added there or logged-out visitors get redirected.
 
 ### Data Layer
 
@@ -51,6 +52,22 @@ User timezone is stored in a cookie and threaded through all date-sensitive logi
 ### AI Integration
 
 `POST /api/ai/generate-goal` accepts `{ goalDescription, timeline, experience, dailyTime, constraints }` and calls Claude (`claude-sonnet-4-6`) to return a structured JSON plan with `title`, `description`, `milestones[]`, and `tasks[]`. The `/goals/ai` page handles the full UX flow: form → review/edit → activate (which bulk-inserts milestones and tasks). Gated behind a Pursuit Pro subscription (Stripe) and rate-limited to 15 generations/user/day — see `ARCHITECTURE_DECISIONS.md` for the reasoning.
+
+### Legal Pages
+
+`/privacy` and `/terms` are hand-written React pages in `src/app/(legal)/`, built from `LegalSection` (`src/components/ui/LegalSection.tsx`). Operator name, contact email, governing state, and effective date live in `src/lib/legal.ts`. The Terms read the AI limit from `DAILY_AI_GENERATION_LIMIT`, so they stay correct if it changes.
+
+**Keep them in sync with the code.** Update the relevant page and bump `LEGAL_EFFECTIVE_DATE` when a change:
+- adds a third-party service that receives user data (update the service provider list on `/privacy`; it currently lists Supabase, Vercel, Anthropic, Stripe, Google Fonts, and Iconify)
+- adds analytics, tracking, or a new cookie (the policy currently promises none beyond auth + `user_timezone`)
+- collects a new kind of user data, or changes what account deletion removes
+- changes pricing, billing period, refund policy, or Pro features (`/terms` §6, plus the disclosure in `UpgradeCTA.tsx`)
+
+The AI disclaimer appears in three places: `/terms` §7–8, and the `AIDisclaimer` component under both buttons in `AIGoalPlanner.tsx`. Signup shows a "By creating an account, you agree…" consent line.
+
+### Account Deletion
+
+`POST /api/delete-account` cancels any live Stripe subscription **before** deleting the auth user, and aborts if cancellation fails. Order matters: the `subscriptions` row cascades away with the user, so after deletion the app can no longer find the subscription to cancel it.
 
 ### Capacitor / iOS
 
@@ -119,6 +136,7 @@ MVP is built and deployed. Core features working:
 - Consistency labels per goal, "Full Day" motivational nudge
 - Anytime tasks, date selector, goal status filtering
 - Settings page, bottom navigation
+- Privacy Policy and Terms of Service (`/privacy`, `/terms`) with AI disclaimer
 
 ## In Progress
 

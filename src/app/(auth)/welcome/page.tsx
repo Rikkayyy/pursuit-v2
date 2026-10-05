@@ -117,6 +117,11 @@ export default function Welcome() {
         <p className="text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] pt-4">
           GPS Method: Goal • Plan • System
         </p>
+        <p className="text-center text-xs text-muted-foreground">
+          <Link href="/privacy" className="hover:underline">Privacy</Link>
+          {" • "}
+          <Link href="/terms" className="hover:underline">Terms</Link>
+        </p>
       </div>
     </div>
   );
