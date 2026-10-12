@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import DailyTaskList from "@/components/features/daily/DailyTaskList";
 import AnytimeTask from "@/components/features/daily/AnytimeTask";
-import CalendarModal from "@/components/features/daily/CalendarModal";
+import CalendarModal from "@/components/features/daily/calendar/CalendarModal";
 import DateSelector from "@/components/ui/DateSelector";
 
 type DailyTask = {
