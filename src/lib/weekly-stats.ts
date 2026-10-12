@@ -1,5 +1,4 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import { getWeekStart } from "./week";
 
 type TaskForStats = {
   id: string;
@@ -14,8 +13,6 @@ function getExpectedCompletions(task: TaskForStats, dates: string[]): number {
   if (task.frequency === "daily") {
     return dates.length;
   }
-
-  if (task.frequency === "weekly") return 1;
 
   if (task.frequency === "specific_days" && task.scheduled_days) {
     return dates.reduce((count, dateStr) => {
