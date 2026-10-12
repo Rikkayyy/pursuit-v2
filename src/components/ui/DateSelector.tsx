@@ -6,9 +6,11 @@ import { Icon } from "@iconify/react";
 export default function DateSelector({
   currentDate,
   today,
+  onOpenCalendar,
 }: {
   currentDate: string;
   today: string;
+  onOpenCalendar: () => void;
 }) {
   const router = useRouter();
 
@@ -41,10 +43,14 @@ export default function DateSelector({
         <Icon icon="solar:arrow-left-linear" className="text-xl" />
       </button>
 
-      <div className="flex-1 text-center">
-        <p className="text-sm font-bold text-foreground">
+      <div className="flex-1 flex flex-col items-center">
+        <button
+          onClick={onOpenCalendar}
+          className="flex items-center gap-1.5 text-sm font-bold text-foreground active:scale-95 transition-transform tap"
+        >
+          <Icon icon="solar:calendar-linear" className="text-base text-primary" />
           {isToday ? "Today" : displayDate}
-        </p>
+        </button>
         {!isToday && (
           <button
             onClick={goToToday}
