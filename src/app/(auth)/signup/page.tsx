@@ -133,6 +133,12 @@ export default function Signup() {
           </button>
         </form>
 
+        <p className="text-center text-xs text-muted-foreground">
+          By creating an account, you agree to our{" "}
+          <Link href="/terms" className="underline">Terms of Service</Link> and{" "}
+          <Link href="/privacy" className="underline">Privacy Policy</Link>.
+        </p>
+
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
           <Link href="/login" className="font-bold hover:underline" style={{ color: "#ff0055" }}>

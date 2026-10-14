@@ -356,6 +356,7 @@ export default function AIGoalPlanner() {
               <Icon icon="solar:magic-stick-3-linear" />
               Regenerate Plan
             </button>
+            <AIDisclaimer />
             <p className="text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
               AI-Powered GPS: Goal • Plan • System
             </p>
@@ -473,11 +474,21 @@ export default function AIGoalPlanner() {
             Generate Plan
             <Icon icon="solar:magic-stick-3-bold" className="text-xl" />
           </button>
+          <AIDisclaimer />
           <p className="text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-6">
             Powered by AI • GPS Method
           </p>
         </div>
       </main>
     </div>
+  );
+}
+function AIDisclaimer() {
+  return (
+    <p className="text-center text-xs text-muted-foreground mt-4 px-2">
+      AI plans are suggestions, not medical, fitness, or financial advice, and results aren&apos;t guaranteed. Check
+      with a professional before starting a health or exercise plan.{" "}
+      <Link href="/terms" className="underline">Learn more</Link>
+    </p>
   );
 }
