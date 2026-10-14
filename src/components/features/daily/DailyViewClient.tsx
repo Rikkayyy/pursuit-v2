@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import DailyTaskList from "@/components/features/daily/DailyTaskList";
 import AnytimeTask from "@/components/features/daily/AnytimeTask";
+import CalendarModal from "@/components/features/daily/calendar/CalendarModal";
 import DateSelector from "@/components/ui/DateSelector";
 
 type DailyTask = {
@@ -64,6 +65,7 @@ export default function DailyViewClient({
   dailyActivity: DailyActivity[];
 }) {
   const [completionOverrides, setCompletionOverrides] = useState<Record<string, boolean>>({});
+  const [showCalendar, setShowCalendar] = useState(false);
 
   useEffect(() => {
     setCompletionOverrides({});
@@ -176,8 +178,19 @@ export default function DailyViewClient({
 
       {/* Date Selector */}
       <div className="px-6 mb-6">
-        <DateSelector currentDate={selectedDate} today={today} />
+        <DateSelector
+          currentDate={selectedDate}
+          today={today}
+          onOpenCalendar={() => setShowCalendar(true)}
+        />
       </div>
+
+      <CalendarModal
+        open={showCalendar}
+        onClose={() => setShowCalendar(false)}
+        selectedDate={selectedDate}
+        today={today}
+      />
 
       {/* 7-Day Activity */}
       {totalCount > 0 && (
