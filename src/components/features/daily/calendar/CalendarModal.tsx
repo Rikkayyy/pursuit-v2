@@ -21,7 +21,7 @@ export default function CalendarModal({
   const router = useRouter();
   const [viewYear, setViewYear] = useState(() => Number(selectedDate.slice(0, 4)));
   const [viewMonth, setViewMonth] = useState(() => Number(selectedDate.slice(5, 7)) - 1);
-  const { loading, days, streaks } = useCalendarData(open, viewYear, viewMonth);
+  const { loading, days, streaks } = useCalendarData(open, viewYear, viewMonth, today);
 
   const isCurrentMonth =
     viewYear === Number(today.slice(0, 4)) && viewMonth === Number(today.slice(5, 7)) - 1;
