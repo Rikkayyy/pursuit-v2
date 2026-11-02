@@ -41,11 +41,19 @@ export async function POST() {
   // Cancel any live Stripe subscription first. The subscriptions row cascades
   // away with the auth user, so if we skipped this the user would keep being
   // billed with no way for the app to find or cancel the subscription.
-  const { data: subscription } = await adminClient
+  const { data: subscription, error: subscriptionError } = await adminClient
     .from("subscriptions")
     .select("stripe_subscription_id, subscription_status")
     .eq("user_id", user.id)
     .maybeSingle();
+
+  if (subscriptionError) {
+    console.error("Failed to look up subscription during account deletion:", subscriptionError);
+    return NextResponse.json(
+      { error: "Couldn't cancel your subscription. Please try again or contact support." },
+      { status: 500 }
+    );
+  }
 
   if (
     subscription?.stripe_subscription_id &&
@@ -66,7 +74,6 @@ export async function POST() {
   await supabase.from("goals").delete().eq("user_id", user.id);
 
   // Delete the auth user — requires service role key
-
   const { error } = await adminClient.auth.admin.deleteUser(user.id);
   if (error) {
     return NextResponse.json({ error: "Failed to delete account" }, { status: 500 });
