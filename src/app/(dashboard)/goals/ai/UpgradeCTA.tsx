@@ -52,6 +52,11 @@ export default function UpgradeCTA() {
         >
           {loading ? "Redirecting..." : "Upgrade to Pro"}
         </button>
+        <p className="text-xs text-muted-foreground">
+          Renews automatically each month until you cancel. Cancel anytime in Settings. No refunds for partial
+          months. By upgrading, you agree to the{" "}
+          <Link href="/terms" className="underline">Terms of Service</Link>.
+        </p>
         <Link href="/goals/new" className="block text-sm font-bold text-muted-foreground pt-2">
           Create a goal manually instead
         </Link>
