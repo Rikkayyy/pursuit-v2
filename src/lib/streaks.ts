@@ -125,36 +125,18 @@ export async function getTaskStreaks(
 
 // A day counts toward the overall streak if any task was completed that day,
 // regardless of how many tasks were due — showing up counts.
+// Computed in Postgres (supabase/migrations/20261014_overall_streaks.sql) so it
+// isn't cut off by the 1000-row API cap. Scoped to the signed-in user via auth.uid().
 export async function getOverallStreaks(
   supabase: SupabaseClient,
-  userId: string,
-  timezone: string = "America/Chicago"
-): Promise<{ current: number; longest: number }> {
-  const { data } = await supabase
-    .from("task_logs")
-    .select("date")
-    .eq("user_id", userId);
+  todayStr: string
+): Promise<{ current: number; longest: number } | null> {
+  const { data, error } = await supabase.rpc("get_overall_streaks", { p_today: todayStr });
 
-  const uniqueDates = Array.from(new Set((data || []).map((d) => d.date))).sort();
-
-  if (uniqueDates.length === 0) {
-    return { current: 0, longest: 0 };
+  if (error || !data?.[0]) {
+    console.error("get_overall_streaks failed", error);
+    return null;
   }
 
-  let longest = 1;
-  let run = 1;
-  for (let i = 1; i < uniqueDates.length; i++) {
-    const prev = new Date(uniqueDates[i - 1] + "T00:00:00");
-    const curr = new Date(uniqueDates[i] + "T00:00:00");
-    const diffDays = Math.round((curr.getTime() - prev.getTime()) / 86400000);
-
-    run = diffDays === 1 ? run + 1 : 1;
-    longest = Math.max(longest, run);
-  }
-
-  const now = new Date();
-  const todayStr = now.toLocaleDateString("en-CA", { timeZone: timezone });
-  const current = countStreak(uniqueDates, todayStr);
-
-  return { current, longest };
+  return { current: data[0].current_streak, longest: data[0].longest_streak };
 }
