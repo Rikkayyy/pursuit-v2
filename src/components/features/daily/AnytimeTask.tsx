@@ -3,9 +3,8 @@
 import { Icon } from "@iconify/react";
 import { useTaskToggle } from "@/hooks/useTaskToggle";
 
-type AnytimeTaskProps = {
-  item: {
-    task: {
+export type AnytimeItem = {
+  task: {
       id: string;
       title: string;
       type: string;
@@ -14,7 +13,10 @@ type AnytimeTaskProps = {
     goalTitle: string;
     goalColor: string;
     isCompleted: boolean;
-  };
+}
+
+type AnytimeTaskProps = {
+  item: AnytimeItem;
   today: string;
   onToggle?: (taskId: string, newState: boolean) => void;
 };

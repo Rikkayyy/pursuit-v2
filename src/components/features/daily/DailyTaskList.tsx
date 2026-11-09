@@ -1,92 +1,68 @@
 "use client";
 
-import { Icon } from "@iconify/react";
-import TaskItem from "@/components/features/daily/TaskItem";
+import type { DailyTask } from "@/components/features/daily/TaskItem";
+import type { AnytimeItem } from "@/components/features/daily/AnytimeTask";
+import GoalSection, { type GoalGroup } from "@/components/features/daily/GoalSection";
+import { isWeeklyTask, weeklyTarget, countsTowardWeek } from "@/lib/weekly";
 
-type DailyTask = {
-  task: {
-    id: string;
-    title: string;
-    type: string;
-    frequency: string | null;
-    goal_id: string;
-  };
-  goalTitle: string;
-  goalColor: string;
-  isCompleted: boolean;
-  streak: number;
-};
-
-function getConsistencyLabel(rate: number): { text: string; color: string; bg: string } {
-  if (rate >= 90) return { text: "Consistency: High", color: "var(--chart-4)", bg: "color-mix(in srgb, var(--chart-4) 10%, transparent)" };
-  if (rate >= 70) return { text: `${rate}% This Week`, color: "var(--chart-2)", bg: "color-mix(in srgb, var(--chart-2) 10%, transparent)" };
-  if (rate >= 40) return { text: `${rate}% This Week`, color: "var(--chart-1)", bg: "color-mix(in srgb, var(--chart-1) 10%, transparent)" };
-  if (rate > 0) return { text: `${rate}% This Week`, color: "var(--destructive)", bg: "color-mix(in srgb, var(--destructive) 10%, transparent)" };
-  return { text: "Not Started", color: "var(--muted-foreground)", bg: "var(--secondary)" };
-}
-
+// Groups the day's tasks by goal, then renders one GoalSection per goal.
 export default function DailyTaskList({
   tasks,
+  anytimeTasks,
   today,
   goalStats,
   onTaskToggle,
 }: {
   tasks: DailyTask[];
+  anytimeTasks: AnytimeItem[];
   today: string;
   goalStats: Record<string, { rate: number }>;
   onTaskToggle?: (taskId: string, newState: boolean) => void;
 }) {
-  const grouped: Record<string, { goalTitle: string; goalColor: string; goalId: string; tasks: DailyTask[] }> = {};
+  const groups: Record<string, GoalGroup> = {};
+  const groupFor = (item: {
+    task: { goal_id: string };
+    goalTitle: string;
+    goalColor: string;
+  }) =>
+    (groups[item.task.goal_id] ??= {
+      goalId: item.task.goal_id,
+      goalTitle: item.goalTitle,
+      goalColor: item.goalColor,
+      today: [],
+      thisWeek: [],
+      anytime: [],
+    });
 
-  tasks.forEach((t) => {
-    const key = t.task.goal_id;
-    if (!grouped[key]) {
-      grouped[key] = {
-        goalTitle: t.goalTitle,
-        goalColor: t.goalColor,
-        goalId: key,
-        tasks: [],
-      };
-    }
-    grouped[key].tasks.push(t);
-  });
+  for (const t of tasks) {
+    if (isWeeklyTask(t.task)) groupFor(t).thisWeek.push(t);
+    else groupFor(t).today.push(t);
+  }
+  for (const t of anytimeTasks) groupFor(t).anytime.push(t);
+
+  // Weekly tasks that already met their target go last.
+  const isWeekDone = (t: DailyTask) =>
+    t.weekDates.filter((d) => countsTowardWeek(t.task, d)).length >= weeklyTarget(t.task);
+  for (const g of Object.values(groups)) {
+    g.thisWeek.sort((a, b) => Number(isWeekDone(a)) - Number(isWeekDone(b)));
+  }
+
+  // Goals with something due today come first.
+  const orderedGroups = Object.values(groups).sort(
+    (a, b) => Number(b.today.length > 0) - Number(a.today.length > 0)
+  );
 
   return (
     <div className="space-y-8">
-      {Object.entries(grouped).map(([goalId, group]) => {
-        const stats = goalStats[group.goalId];
-        const label = stats ? getConsistencyLabel(stats.rate) : null;
-
-        return (
-          <section key={goalId}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{
-                    backgroundColor: group.goalColor,
-                    boxShadow: `0 0 8px ${group.goalColor}66`,
-                  }}
-                />
-                <h3 className="font-heading font-bold text-lg text-foreground">{group.goalTitle}</h3>
-              </div>
-              {label && (
-                <span
-                  className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter"
-                  style={{ color: label.color, backgroundColor: label.bg }}
-                >
-                  {label.text}
-                </span>
-              )}
-            </div>
-            <div className="space-y-3">
-              {group.tasks.map((item) => (
-                <TaskItem key={item.task.id} item={item} today={today} onToggle={onTaskToggle} />
-              ))}
-            </div>
-          </section>
-        );
-      })}
+      {orderedGroups.map((group) => (
+        <GoalSection
+          key={group.goalId}
+          group={group}
+          weeklyRate={goalStats[group.goalId]?.rate}
+          today={today}
+          onTaskToggle={onTaskToggle}
+        />
+      ))}
     </div>
   );
 }

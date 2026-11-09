@@ -3,25 +3,10 @@
 import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import DailyTaskList from "@/components/features/daily/DailyTaskList";
-import AnytimeTask from "@/components/features/daily/AnytimeTask";
 import CalendarModal from "@/components/features/daily/calendar/CalendarModal";
+import { isTaskDueOn } from "@/lib/calendar";
 import DateSelector from "@/components/ui/DateSelector";
-
-type DailyTask = {
-  task: {
-    id: string;
-    title: string;
-    type: string;
-    frequency: string | null;
-    scheduled_days: number[] | null;
-    due_date: string | null;
-    goal_id: string;
-  };
-  goalTitle: string;
-  goalColor: string;
-  isCompleted: boolean;
-  streak: number;
-};
+import { DailyTask } from "./TaskItem";
 
 type AnytimeTaskType = {
   task: {
@@ -82,10 +67,11 @@ export default function DailyViewClient({
   };
 
   // Calculate local completion count
-  const completedCount = todaysTasks.filter((t) =>
+  const dayTasks = todaysTasks.filter((t) => isTaskDueOn(t.task, selectedDate));
+  const completedCount = dayTasks.filter((t) =>
     getEffectiveCompleted(t.task.id, t.isCompleted)
   ).length;
-  const totalCount = todaysTasks.length;
+  const totalCount = dayTasks.length;
 
   // Calculate local daily activity (update today's count)
   const dailyActivity = initialDailyActivity.map((day) => {
@@ -211,10 +197,11 @@ export default function DailyViewClient({
                 const isCurrentDay = day.date === selectedDate;
                 const heightPx = day.isFuture ? 4 : ratio === 0 ? 10 : Math.max(16, Math.round(ratio * 48));
                 return (
-                  <div key={day.date} className="flex-1 group flex flex-col items-center">
+                  <div key={day.date} className="flex-1 min-w-0 group flex flex-col items-center">
                     <div className="h-14 flex items-end w-full justify-center">
+                      {/* Fluid width (capped at 44px) so all 7 bars fit on narrow phones */}
                       <div
-                        className="w-11 rounded-full transition-all duration-300 group-hover:scale-110"
+                        className="w-full max-w-11 rounded-full transition-all duration-300 group-hover:scale-110"
                         style={{
                           height: `${heightPx}px`,
                           backgroundColor: day.isFuture
@@ -264,7 +251,7 @@ export default function DailyViewClient({
 
       {/* Task List */}
       <main className="px-6 space-y-8">
-        {totalCount === 0 ? (
+        {todaysTasks.length === 0 && anytimeTasks.length === 0 ? (
           <div className="mt-12 text-center">
             <p className="text-muted-foreground">No tasks scheduled for today.</p>
             <a
@@ -275,26 +262,13 @@ export default function DailyViewClient({
             </a>
           </div>
         ) : (
-          <>
-            <DailyTaskList
-              tasks={todaysTasks}
-              today={selectedDate}
-              goalStats={goalStats}
-              onTaskToggle={onTaskToggle}
-            />
-            {anytimeTasks.length > 0 && (
-              <section>
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
-                  Anytime
-                </h3>
-                <div className="space-y-3">
-                  {anytimeTasks.map((item) => (
-                    <AnytimeTask key={item.task.id} item={item} today={selectedDate} onToggle={onTaskToggle} />
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
+          <DailyTaskList
+            tasks={todaysTasks}
+            anytimeTasks={anytimeTasks}
+            today={selectedDate}
+            goalStats={goalStats}
+            onTaskToggle={onTaskToggle}
+          />
         )}
       </main>
     </>

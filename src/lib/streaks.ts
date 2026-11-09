@@ -25,62 +25,46 @@ export function countStreak(dates: string[], todayStr: string): number {
   return streak;
 }
 
-function countSpecificDaysStreak (
+function countSpecificDaysStreak(
   dates: string[],
   todayStr: string,
   scheduledDays: number[]
 ): number {
   if (scheduledDays.length === 0) return 0;
-  const dateSet = new Set(dates);
-  const sortedDays = [...scheduledDays].sort((a, b) => a - b);
+  const logged = new Set(dates);
 
-  const today = new Date(todayStr + "T00:00:00");
-  const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() - today.getDay());
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+  const weekStart = new Date(todayStr + "T12:00:00");
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
 
   let streak = 0;
-  let isCurrentWeek = true;
-
   for (let w = 0; w < 104; w++) {
-    const weekDueDates = sortedDays.map((day) => {
+    const allDone = scheduledDays.every((day) => {
       const d = new Date(weekStart);
-      d.setDate(d.getDate() + day);
-      return d.toISOString().split("T")[0];
+      d.setDate(weekStart.getDate() + day);
+      return logged.has(fmt(d));
     });
 
-    // Only judge due-dates that have actually happened by today — a scheduled
-    // day later this week hasn't occurred yet, so it can't count against you.
-    const elapsedDueDates = weekDueDates.filter((d) => d <= todayStr);
-
-    if (isCurrentWeek && elapsedDueDates.length === 0) {
-      // Nothing scheduled has happened yet this week — too early to judge,
-      // move on to last week without counting or breaking.
-      isCurrentWeek = false;
-      weekStart.setDate(weekStart.getDate() - 7);
-      continue;
-    }
-
-     const allCompleted = elapsedDueDates.every((d) => dateSet.has(d));
-
-     if (allCompleted) {
+    if (allDone) {
       streak++;
-     } else {
-      break;
-     }
+    } else if (w > 0) {
+      break; // a past week with a missed scheduled day ends the streak
+    }
+    // w === 0 and not all done yet: current week is still in progress, keep going
 
-     isCurrentWeek = false;
     weekStart.setDate(weekStart.getDate() - 7);
   }
-
   return streak;
 }
+
 
 type StreakTask = {
   id: string;
   frequency: string | null;
   scheduled_days: number[] | null;
-}
-
+};
 
 export async function getTaskStreaks(
   supabase: SupabaseClient,
@@ -93,35 +77,51 @@ export async function getTaskStreaks(
     return streaks;
   }
 
-  const taskIds = tasks.map((t) => t.id);
+  const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: timezone });
 
-  const grouped: Record<string, string[]> = {};
-  const { data: taskLogs } = await supabase
-    .from("task_logs")
-    .select("task_id, date")
-    .in("task_id", taskIds)
-    .order("date", { ascending: false });
+  const flexibleIds = tasks.filter((t) => t.frequency === "flexible").map((t) => t.id);
+  const otherIds = tasks.filter((t) => t.frequency !== "flexible").map((t) => t.id);
 
-  for (const log of taskLogs || []) {
-    if (!grouped[log.task_id]) {
-      grouped[log.task_id] = [];
-    }
+  const [logsResult, flexibleResult] = await Promise.all([
+    otherIds.length > 0
+      ? supabase
+          .from("task_logs")
+          .select("task_id, date")
+          .in("task_id", otherIds)
+          .order("date", { ascending: false })
+      : Promise.resolve({ data: [] as { task_id: string; date: string }[], error: null }),
+    flexibleIds.length > 0
+      ? supabase.rpc("get_flexible_streaks", { p_task_ids: flexibleIds, p_today: todayStr })
+      : Promise.resolve({ data: [] as { task_id: string; streak: number }[], error: null }),
+  ]);
 
-    grouped[log.task_id].push(log.date);
+  // Flexible: one row per task from the SQL function.
+  if (flexibleResult.error) {
+    console.error("get_flexible_streaks failed", flexibleResult.error);
+  }
+  for (const row of (flexibleResult.data || []) as { task_id: string; streak: number }[]) {
+    streaks[row.task_id] = row.streak;
   }
 
-  const now = new Date();
-  const todayStr = now.toLocaleDateString("en-CA", { timeZone: timezone });
+  // Daily / specific days: group logs by task, then count in JS.
+  const grouped: Record<string, string[]> = {};
+  for (const log of logsResult.data || []) {
+    (grouped[log.task_id] ??= []).push(log.date);
+  }
 
   for (const task of tasks) {
+    if (task.frequency === "flexible") continue; // already set above
+
     const logs = grouped[task.id] || [];
-    streaks[task.id] = task.frequency === "specific_days"
-    ? countSpecificDaysStreak(logs, todayStr, task.scheduled_days || [])
-    : countStreak(logs, todayStr);
+    streaks[task.id] =
+      task.frequency === "specific_days"
+        ? countSpecificDaysStreak(logs, todayStr, task.scheduled_days || [])
+        : countStreak(logs, todayStr);
   }
 
   return streaks;
 }
+
 
 // A day counts toward the overall streak if any task was completed that day,
 // regardless of how many tasks were due — showing up counts.
