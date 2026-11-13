@@ -3,18 +3,23 @@
 import { Icon } from "@iconify/react";
 import { useTaskToggle } from "@/hooks/useTaskToggle";
 
-type DailyTask = {
+export type DailyTask = {
   task: {
     id: string;
     title: string;
     type: string;
     frequency: string | null;
+    scheduled_days: number[] | null;
+    times_per_week: number | null;
     goal_id: string;
+    due_date: string | null;
   };
   goalTitle: string;
   goalColor: string;
   isCompleted: boolean;
   streak: number;
+  weekCount: number;
+  weekDates: string[]; // dates logged this week (Sun–Sat of the selected date)
 };
 
 export default function TaskItem({

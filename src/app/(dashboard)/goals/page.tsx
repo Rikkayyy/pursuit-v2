@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import GoalCard from "@/components/features/goals/GoalCard";
 import GoalFilters from "@/components/features/goals/GoalFilters";
-import { getWeeklyHitRate } from "@/lib/weekly-stats";
+import { getWeeklyHitRate } from "@/lib/weekly";
 import { getSafeTimezone } from "@/lib/util";
 import { Icon } from "@iconify/react";
 
@@ -29,7 +29,7 @@ export default async function GoalsOverview({
     .select(`
       *,
       milestones (id, is_completed),
-      tasks (id, type, frequency, scheduled_days)
+      tasks (id, type, frequency, scheduled_days, times_per_week)
     `)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });

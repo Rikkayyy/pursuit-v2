@@ -14,6 +14,7 @@ export type DailyStat = {
   rate: number; // 0–100
 };
 
+// Flexible tasks are left out: they have no per-day target
 function getExpectedCompletions(task: TaskForStats, date: string): number {
   if (task.type !== "recurring") return 0;
 
@@ -51,8 +52,12 @@ export async function getDailyStats(
   endDate: string,
   timezone: string
 ): Promise<DailyStat[]> {
-  const recurringTasks = tasks.filter((t) => t.type === "recurring");
+  // Flexible tasks are left out: they have no per-day target (see getExpectedCompletions).
+  const recurringTasks = tasks.filter(
+    (t) => t.type === "recurring" && t.frequency !== "flexible"
+  );
   const taskIds = recurringTasks.map((t) => t.id);
+  const tasksById = new Map(recurringTasks.map((t) => [t.id, t]));
 
   const dates = buildDateRange(startDate, endDate, timezone);
 
@@ -67,8 +72,12 @@ export async function getDailyStats(
     .gte("date", startDate)
     .lte("date", endDate);
 
+  // Only count a log if its task was due that day, so a specific-days task logged
+  // on an off day can't push the day's completed count above what was expected.
   const logsByDate = new Map<string, number>();
   for (const log of logs || []) {
+    const task = tasksById.get(log.task_id);
+    if (!task || getExpectedCompletions(task, log.date) === 0) continue;
     logsByDate.set(log.date, (logsByDate.get(log.date) || 0) + 1);
   }
 
