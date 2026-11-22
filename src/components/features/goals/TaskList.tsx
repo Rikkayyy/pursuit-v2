@@ -52,8 +52,9 @@ export default function TaskList({ tasks, goalColor }: { tasks: Task[]; goalColo
               initialData={{
                 title: task.title,
                 type: task.type,
-                frequency: (task.frequency as "daily" | "specific_days") || "daily",
+                frequency: (task.frequency as "daily" | "specific_days" | "flexible") || "daily",
                 scheduled_days: task.scheduled_days ?? null,
+                times_per_week: task.times_per_week ?? null,
               }}
               headerLabel="Edit System"
               headerIcon="solar:pen-bold"
@@ -66,6 +67,7 @@ export default function TaskList({ tasks, goalColor }: { tasks: Task[]; goalColo
                     type: data.type,
                     frequency: data.type === "recurring" ? data.frequency : null,
                     scheduled_days: data.type === "recurring" ? data.scheduled_days : null,
+                    times_per_week: data.type === "recurring" ? data.times_per_week : null
                   });
                 } catch (error) {
                   console.error("Failed to update task:", error);
@@ -101,7 +103,7 @@ export default function TaskList({ tasks, goalColor }: { tasks: Task[]; goalColo
                   {task.type === "recurring"
                     ? task.frequency === "daily"
                       ? "Every Day"
-                      : "Specific Days"
+                      : "Weekly"
                     : "One-time Task"}
                 </span>
               </div>

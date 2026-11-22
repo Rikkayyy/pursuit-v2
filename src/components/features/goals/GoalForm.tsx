@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
-import TaskForm from "@/components/features/systems/TaskForm";
+import TaskForm, {type TaskFormData } from "@/components/features/systems/TaskForm";
 
 const COLORS = [
   { name: "Red", value: "#ff0055" },
@@ -15,13 +15,6 @@ const COLORS = [
   { name: "Black", value: "#171717" },
 ];
 
-type TaskInput = {
-  title: string;
-  type: "recurring" | "one_time";
-  frequency: "daily" | "specific_days";
-  scheduled_days: number[] | null;
-};
-
 type MilestoneInput = {
   title: string;
 };
@@ -31,7 +24,7 @@ function NewTaskInput({
   onAdd,
 }: {
   color: string;
-  onAdd: (task: TaskInput) => void;
+  onAdd: (task: TaskFormData) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -71,23 +64,13 @@ export default function GoalForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState(COLORS[0].value);
-  const [tasks, setTasks] = useState<TaskInput[]>([]);
+  const [tasks, setTasks] = useState<TaskFormData[]>([]);
   const [milestoneInput, setMilestoneInput] = useState("");
   const [milestones, setMilestones] = useState<MilestoneInput[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
-
-  const addTask = () => {
-    setTasks([...tasks, { title: "", type: "recurring", frequency: "daily", scheduled_days: null }]);
-  };
-
-  const updateTask = (index: number, field: keyof TaskInput, value: string) => {
-    const updated = [...tasks];
-    updated[index] = { ...updated[index], [field]: value };
-    setTasks(updated);
-  };
 
   const removeTask = (index: number) => {
     if (tasks.length > 1) {
@@ -150,6 +133,7 @@ export default function GoalForm() {
       type: t.type,
       frequency: t.type === "recurring" ? t.frequency : null,
       scheduled_days: t.type === "recurring" ? t.scheduled_days : null,
+      times_per_week: t.type === "recurring" ? t.times_per_week : null,
       sort_order: i,
     }));
 
@@ -324,7 +308,7 @@ export default function GoalForm() {
                       <span className="flex items-center gap-1">
                         <Icon icon="solar:calendar-bold" style={{ color: `${color}99` }} />
                         {task.type === "recurring"
-                          ? task.frequency === "daily" ? "Daily" : task.frequency === "specific_days" ? "Specific Days" : "Custom Days"
+                          ? task.frequency === "daily" ? "Daily" : task.frequency === "specific_days" ? "Specific Days" : "Flexible"
                           : "One-time"}
                       </span>
                     </div>

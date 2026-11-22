@@ -59,7 +59,16 @@ export default function AIGoalPlanner() {
         throw new Error(data.error || "Failed to generate plan");
       }
 
-      setPlan(data);
+      // The planner has no day picker, so it only offers daily or flexible (1× a week).
+      // Anything else the model returns (e.g. "specific_days", which would be saved with
+      // no days and could never be logged) becomes flexible.
+      const plan = data as GeneratedPlan;
+      setPlan({
+        ...plan,
+        tasks: plan.tasks.map((t) =>
+          t.type === "recurring" && t.frequency !== "daily" ? { ...t, frequency: "flexible" } : t
+        ),
+      });
       setStep("review");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -139,6 +148,7 @@ export default function AIGoalPlanner() {
         title: t.title,
         type: t.type,
         frequency: t.type === "recurring" ? t.frequency : null,
+        times_per_week: t.type === "recurring" && t.frequency === "flexible" ? 1 : null,
         sort_order: i,
       }));
       await supabase.from("tasks").insert(taskRows);
@@ -287,7 +297,7 @@ export default function AIGoalPlanner() {
                       className="w-full bg-transparent font-bold text-foreground outline-none"
                     />
                     <div className="flex items-center gap-2 mt-1">
-                      {(["daily", "specific_days"] as const).map((f) => (
+                      {(["daily", "flexible"] as const).map((f) => (
                         <button
                           key={f}
                           onClick={() => { updateTask(i, "type", "recurring"); updateTask(i, "frequency", f); }}
@@ -300,7 +310,7 @@ export default function AIGoalPlanner() {
                             backgroundColor: t.type === "recurring" && t.frequency === f ? color : undefined,
                           }}
                         >
-                          {f === "daily" ? "Daily" : "Specific Days"}
+                          {f === "daily" ? "Daily" : "Weekly"}
                         </button>
                       ))}
                       <button

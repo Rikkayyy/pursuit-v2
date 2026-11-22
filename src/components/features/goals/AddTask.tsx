@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import TaskForm from "@/components/features/systems/TaskForm";
+import { createTask } from "@/lib/api/tasks";
 
 export default function AddTask({
   goalId,
@@ -43,14 +44,20 @@ export default function AddTask({
       <TaskForm
         goalColor={goalColor}
         onSave={async (data) => {
-          await supabase.from("tasks").insert({
-            goal_id: goalId,
-            title: data.title,
-            type: data.type,
-            frequency: data.type === "recurring" ? data.frequency : null,
-            scheduled_days: data.type === "recurring" ? data.scheduled_days : null,
-            sort_order: nextOrder,
-          });
+          try {
+            await createTask(supabase, {
+              goal_id: goalId,
+              title: data.title,
+              type: data.type,
+              frequency: data.type === "recurring" ? data.frequency : null,
+              scheduled_days: data.type === "recurring" ? data.scheduled_days : null,
+              times_per_week: data.type === "recurring" ? data.times_per_week : null,
+              sort_order: nextOrder,
+            });
+          } catch (error) {
+            console.error("Failed to create task:", error);
+            return; // keep the form open so the user's input isn't lost
+          }
           setIsExpanded(false);
           router.refresh();
         }}

@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getTaskStreaks } from "@/lib/streaks";
 import { cookies } from "next/headers";
-import { getDailyCompletions } from "@/lib/weekly-stats";
-import { getWeeklyHitRate } from "@/lib/weekly-stats";
+import { getDailyCompletions } from "@/lib/weekly";
+import { getWeeklyHitRate, getWeekDates } from "@/lib/weekly";
 import { getSafeTimezone } from "@/lib/util";
 import DailyViewClient from "@/components/features/daily/DailyViewClient";
 
@@ -26,11 +26,15 @@ export default async function DailyView({
 
   const { date: dateParam } = await searchParams;
   const selectedDate = dateParam || today;
-  const dayOfWeek = new Date(selectedDate + "T12:00:00").getDay();
   const isToday = selectedDate === today;
 
+  // weekly tasks
+  const week = getWeekDates(selectedDate);
+  const weekStart = week[0];
+  const weekEnd = week[6];
+
   // === WAVE 1: Fetch independent data in parallel ===
-  const [{ data: goals }, { data: todayLogs }] = await Promise.all([
+  const [{ data: goals }, { data: weekLogs }] = await Promise.all([
     supabase
       .from("goals")
       .select(`
@@ -43,6 +47,7 @@ export default async function DailyView({
           type,
           frequency,
           scheduled_days,
+          times_per_week,
           due_date,
           goal_id
         )
@@ -51,15 +56,25 @@ export default async function DailyView({
       .eq("status", "active"),
     supabase
       .from("task_logs")
-      .select("task_id")
+      .select("task_id, date")
       .eq("user_id", user.id)
-      .eq("date", selectedDate),
+      .gte("date", weekStart)
+      .lte("date", weekEnd),
   ]);
 
-  const completedTaskIds = new Set(todayLogs?.map((log) => log.task_id) || []);
+  // The selected date is always inside its own Sun–Sat week, so its logs are already in weekLogs.
+  const completedTaskIds = new Set(
+    (weekLogs || []).filter((log) => log.date === selectedDate).map((log) => log.task_id)
+  );
+
+  // Dates each task was logged on this week (one log per task per day).
+  const weekDates: Record<string, string[]> = {};
+  for (const log of weekLogs || []) {
+    (weekDates[log.task_id] ??= []).push(log.date);
+  }
 
   // Collect task IDs for wave 2
-    const allRecurringTasks: { id: string; frequency: string | null; scheduled_days: number[] | null }[] = [];
+    const allRecurringTasks: { id: string; frequency: string | null; scheduled_days: number[] | null; times_per_week: number | null }[] = [];
   goals?.forEach((goal) => {
     goal.tasks?.forEach((task) => {
       if (task.type === "recurring") {
@@ -67,6 +82,7 @@ export default async function DailyView({
           id: task.id,
           frequency: task.frequency,
           scheduled_days: task.scheduled_days ?? null,
+          times_per_week: task.times_per_week ?? null,
         });
       }
     });
@@ -75,7 +91,11 @@ export default async function DailyView({
   // === WAVE 2: Fetch dependent data in parallel ===
   const [streaks, dailyActivity, ...goalStatsResults] = await Promise.all([
     getTaskStreaks(supabase, allRecurringTasks, timezone),
-    getDailyCompletions(supabase, allRecurringTasks.map((t) => t.id), timezone),
+    getDailyCompletions(
+      supabase,
+      allRecurringTasks.map((t) => ({ ...t, type: "recurring", due_date: null })),
+      timezone
+    ),
     ...(goals || [])
       .filter((goal) => goal.tasks && goal.tasks.length > 0)
       .map((goal) => 
@@ -100,6 +120,7 @@ export default async function DailyView({
       type: string;
       frequency: string | null;
       scheduled_days: number[] | null;
+      times_per_week: number | null;
       due_date: string | null;
       goal_id: string;
     };
@@ -107,29 +128,30 @@ export default async function DailyView({
     goalColor: string;
     isCompleted: boolean;
     streak: number;
+    weekDates: string[];
   }[] = [];
 
   goals?.forEach((goal) => {
     goal.tasks?.forEach((task) => {
-      let isDueToday = false;
+      let showToday = false;
 
       if (task.type === "recurring") {
-        if (task.frequency === "daily") {
-          isDueToday = true;
-        } else if (task.frequency === "specific_days") {
-          isDueToday = task.scheduled_days?.includes(dayOfWeek) ?? false;
-        }
+        showToday = 
+          task.frequency === "daily" ||
+          task.frequency === "flexible" ||
+          task.frequency === "specific_days";
       } else if (task.type === "one_time") {
-        isDueToday = task.due_date === selectedDate;
+        showToday = task.due_date === selectedDate;
       }
 
-      if (isDueToday) {
+      if (showToday) {
         todaysTasks.push({
           task,
           goalTitle: goal.title,
           goalColor: goal.color,
           isCompleted: completedTaskIds.has(task.id),
           streak: streaks[task.id] || 0,
+          weekDates: weekDates[task.id] || [],
         });
       }
     });
@@ -163,9 +185,6 @@ export default async function DailyView({
       }
     });
   });
-
-  const completedCount = todaysTasks.filter((t) => t.isCompleted).length;
-  const totalCount = todaysTasks.length;
 
   // Greeting based on time of day
   const hour = new Date().getHours();

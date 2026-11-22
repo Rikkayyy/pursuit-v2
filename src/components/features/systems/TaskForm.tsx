@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 import { Icon } from "@iconify/react";
+import TimesPerWeekSlider from "./TimesPerWeekSlider";
+import SpecificDaysPicker from "./SpecificDaysPicker";
 
-type TaskFormData = {
+export type TaskFormData = {
   title: string;
   type: "recurring" | "one_time";
-  frequency: "daily" | "specific_days";
+  frequency: "daily" | "specific_days" | "flexible";
   scheduled_days: number[] | null;
+  times_per_week: number | null;
 };
-
-const DAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 export default function TaskForm({
   goalColor = "#ff0055",
@@ -33,21 +34,18 @@ export default function TaskForm({
 }) {
   const [title, setTitle] = useState(initialData?.title || "");
   const [type, setType] = useState<"recurring" | "one_time">(initialData?.type || "recurring");
-  const [frequency, setFrequency] = useState<"daily" | "specific_days">(
+  const [frequency, setFrequency] = useState<"daily" | "specific_days" | "flexible">(
     initialData?.frequency || "daily"
   );
   const [scheduledDays, setScheduledDays] = useState<number[]>(
     initialData?.scheduled_days || []
   );
+  const [timesPerWeek, setTimesPerWeek] = useState<number>(initialData?.times_per_week || 3);
   const [loading, setLoading] = useState(false);
+  const isWeeklyType = frequency !== "daily";
 
-  const isMissingScheduledDays = frequency === "specific_days" && scheduledDays.length === 0;
-
-  const toggleDay = (day: number) => {
-    setScheduledDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort()
-    );
-  };
+  const isMissingScheduledDays = 
+  frequency === "specific_days" && scheduledDays.length === 0;
 
   const handleSave = async () => {
     if (!title.trim() || isMissingScheduledDays) return;
@@ -57,6 +55,7 @@ export default function TaskForm({
       type,
       frequency,
       scheduled_days: frequency === "specific_days" ? scheduledDays : null,
+      times_per_week:  frequency === "flexible" ? timesPerWeek : null,
     });
     setLoading(false);
   };
@@ -123,7 +122,36 @@ export default function TaskForm({
             Frequency
           </span>
           <div className="flex gap-2">
-            {(["daily", "specific_days"] as const).map((f) => (
+            {(["daily", "weekly"] as const).map((f) => {
+              const isActive = f === "daily" ? frequency === "daily" : isWeeklyType;
+              return (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => {
+                    if (f === "daily") setFrequency("daily");
+                    else if (!isWeeklyType) setFrequency("flexible");
+                  }}
+                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all tap ${
+                    isActive ? "text-white shadow-sm" : "bg-secondary text-secondary-foreground"
+                  }`}
+                  style={{ backgroundColor: isActive ? goalColor : undefined }}
+                >
+                  {f === "daily" ? "Daily" : "Weekly"}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+       {type === "recurring" && isWeeklyType && (
+        <div className="space-y-3">
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
+            Weekly Type
+          </span>
+          <div className="flex gap-2">
+            {(["flexible", "specific_days"] as const).map((f) => (
               <button
                 key={f}
                 type="button"
@@ -133,40 +161,28 @@ export default function TaskForm({
                 }`}
                 style={{ backgroundColor: frequency === f ? goalColor : undefined }}
               >
-                {f === "daily" ? "Daily" : "Specific Days"}
+                {f === "flexible" ? "Flexible" : "Specific Days"}
               </button>
             ))}
           </div>
         </div>
       )}
 
+      {type === "recurring" && frequency === "flexible" &&  (
+        <TimesPerWeekSlider 
+          timesPerWeek={timesPerWeek}
+          onChange={setTimesPerWeek}
+          goalColor={goalColor}
+        />
+      )}
+
       {type === "recurring" && frequency === "specific_days" && (
-        <div className="space-y-3">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-            Days
-          </span>
-          <div className="flex gap-1.5">
-            {DAY_LABELS.map((label, day) => {
-              const selected = scheduledDays.includes(day);
-              return (
-                <button
-                  key={day}
-                  type="button"
-                  onClick={() => toggleDay(day)}
-                  className={`w-9 h-9 rounded-full text-xs font-bold transition-all tap ${
-                    selected ? "text-white" : "bg-secondary text-secondary-foreground"
-                  }`}
-                  style={{ backgroundColor: selected ? goalColor : undefined }}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-          {isMissingScheduledDays && (
-            <p className="text-xs text-destructive px-1" >Please select at least one day.</p>
-          )}
-        </div>
+        <SpecificDaysPicker 
+          scheduledDays={scheduledDays}
+          onChange={setScheduledDays}
+          goalColor={goalColor}
+          isMissingScheduledDays={isMissingScheduledDays}       
+        />
       )}
 
       <div className="flex gap-3 pt-2">
