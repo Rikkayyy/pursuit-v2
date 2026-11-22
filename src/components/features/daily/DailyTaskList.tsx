@@ -10,12 +10,14 @@ export default function DailyTaskList({
   tasks,
   anytimeTasks,
   today,
+  actualToday,
   goalStats,
   onTaskToggle,
 }: {
   tasks: DailyTask[];
   anytimeTasks: AnytimeItem[];
-  today: string;
+  today: string; // the selected date
+  actualToday: string; // the real current date in the user's timezone
   goalStats: Record<string, { rate: number }>;
   onTaskToggle?: (taskId: string, newState: boolean) => void;
 }) {
@@ -60,6 +62,7 @@ export default function DailyTaskList({
           group={group}
           weeklyRate={goalStats[group.goalId]?.rate}
           today={today}
+          actualToday={actualToday}
           onTaskToggle={onTaskToggle}
         />
       ))}

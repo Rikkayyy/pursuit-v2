@@ -23,15 +23,15 @@ You MUST respond with ONLY valid JSON in this exact format, no other text:
     { "title": "Milestone 2 — ordered by progression" }
   ],
   "tasks": [
-    { "title": "Daily or specific-days task", "type": "recurring", "frequency": "daily" },
-    { "title": "Another task", "type": "recurring", "frequency": "specific_days" },
+    { "title": "A daily task", "type": "recurring", "frequency": "daily" },
+    { "title": "A once-a-week task", "type": "recurring", "frequency": "flexible" },
     { "title": "A one-time setup task", "type": "one_time", "frequency": "daily" }
   ]
 }
 
 Rules:
 - Generate 3-6 milestones ordered from earliest to latest
-- Generate 3-6 tasks, mostly recurring (daily or specific days of the week)
+- Generate 3-6 tasks, mostly recurring: "daily", or "flexible" for once a week on any day (don't name specific weekdays in titles)
 - Include 1-2 one-time tasks if setup steps are needed
 - Milestones should be measurable and progressively harder
 - Tasks should be specific and actionable with realistic time commitments

@@ -19,10 +19,12 @@ const STREAK_ORANGE = { bg: "#fff7ed", text: "#f97316" };
 export default function WeeklyTaskItem({
   item,
   today,
+  actualToday,
   onToggle,
 }: {
   item: DailyTask;
   today: string; // the selected date
+  actualToday: string; // the real current date; future/missed are relative to this
   onToggle?: (taskId: string, newState: boolean) => void;
 }) {
   const { isCompleted, isPending, toggle } = useTaskToggle(
@@ -82,7 +84,7 @@ export default function WeeklyTaskItem({
                 className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                 style={{ backgroundColor: `${color}1a`, color }}
               >
-                Due today
+                {today === actualToday ? "Due today" : "Due that day"}
               </span>
             )}
             {item.streak > 0 && (
@@ -156,9 +158,9 @@ export default function WeeklyTaskItem({
         {weekDates.map((date, i) => {
           const isLogged =  logged.has(date) && countsTowardWeek(item.task, date);
           const isSelected = date === today;
-          const isFuture = date > today;
+          const isFuture = date > actualToday;
           const isOffDay = isSpecificFrequency && !scheduled.has(i);
-          const isMissed = isSpecificFrequency && !isOffDay && !isLogged && date < today;
+          const isMissed = isSpecificFrequency && !isOffDay && !isLogged && date < actualToday;
 
           return (
             <div key={date} className="flex flex-col items-center gap-1.5">

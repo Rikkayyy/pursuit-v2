@@ -5,7 +5,6 @@ import { cookies } from "next/headers";
 import { getDailyCompletions } from "@/lib/weekly";
 import { getWeeklyHitRate, getWeekDates } from "@/lib/weekly";
 import { getSafeTimezone } from "@/lib/util";
-import { toDateStr } from "@/lib/calendar";
 import DailyViewClient from "@/components/features/daily/DailyViewClient";
 
 export default async function DailyView({
@@ -27,7 +26,6 @@ export default async function DailyView({
 
   const { date: dateParam } = await searchParams;
   const selectedDate = dateParam || today;
-  const dayOfWeek = new Date(selectedDate + "T12:00:00").getDay();
   const isToday = selectedDate === today;
 
   // weekly tasks
@@ -36,7 +34,7 @@ export default async function DailyView({
   const weekEnd = week[6];
 
   // === WAVE 1: Fetch independent data in parallel ===
-  const [{ data: goals }, { data: todayLogs }, { data: weekLogs }] = await Promise.all([
+  const [{ data: goals }, { data: weekLogs }] = await Promise.all([
     supabase
       .from("goals")
       .select(`
@@ -58,18 +56,16 @@ export default async function DailyView({
       .eq("status", "active"),
     supabase
       .from("task_logs")
-      .select("task_id")
-      .eq("user_id", user.id)
-      .eq("date", selectedDate),
-    supabase
-      .from("task_logs")
       .select("task_id, date")
       .eq("user_id", user.id)
       .gte("date", weekStart)
       .lte("date", weekEnd),
   ]);
 
-  const completedTaskIds = new Set(todayLogs?.map((log) => log.task_id) || []);
+  // The selected date is always inside its own Sun–Sat week, so its logs are already in weekLogs.
+  const completedTaskIds = new Set(
+    (weekLogs || []).filter((log) => log.date === selectedDate).map((log) => log.task_id)
+  );
 
   // Dates each task was logged on this week (one log per task per day).
   const weekDates: Record<string, string[]> = {};
@@ -95,7 +91,11 @@ export default async function DailyView({
   // === WAVE 2: Fetch dependent data in parallel ===
   const [streaks, dailyActivity, ...goalStatsResults] = await Promise.all([
     getTaskStreaks(supabase, allRecurringTasks, timezone),
-    getDailyCompletions(supabase, allRecurringTasks.map((t) => t.id), timezone),
+    getDailyCompletions(
+      supabase,
+      allRecurringTasks.map((t) => ({ ...t, type: "recurring", due_date: null })),
+      timezone
+    ),
     ...(goals || [])
       .filter((goal) => goal.tasks && goal.tasks.length > 0)
       .map((goal) => 
@@ -128,7 +128,6 @@ export default async function DailyView({
     goalColor: string;
     isCompleted: boolean;
     streak: number;
-    weekCount: number;
     weekDates: string[];
   }[] = [];
 
@@ -152,7 +151,6 @@ export default async function DailyView({
           goalColor: goal.color,
           isCompleted: completedTaskIds.has(task.id),
           streak: streaks[task.id] || 0,
-          weekCount: weekDates[task.id]?.length || 0,
           weekDates: weekDates[task.id] || [],
         });
       }

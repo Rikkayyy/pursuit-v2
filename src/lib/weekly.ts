@@ -1,5 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import { toDateStr } from "@/lib/calendar";
+import { toDateStr, isTaskDueOn, type CalendarTask } from "@/lib/calendar";
 
 type TaskForStats = {
   id: string;
@@ -113,9 +113,11 @@ export async function getWeeklyHitRate(
   };
 }
 
+// Per-day completions for the current Sun–Sat week. A day's total is the tasks due
+// that day (isTaskDueOn), so flexible tasks and off-day specific-days tasks never count.
 export async function getDailyCompletions(
   supabase: SupabaseClient,
-  taskIds: string[],
+  tasks: CalendarTask[],
   timezone: string = "America/Chicago"
 ): Promise<{ date: string; count: number; total: number; isFuture: boolean }[]> {
   const days = getCurrentWeekDays(timezone);
@@ -124,14 +126,14 @@ export async function getDailyCompletions(
   const startDate = days[0];
   const endDate = todayStr; // Only fetch up to today
 
-  if (taskIds.length === 0) {
+  if (tasks.length === 0) {
     return days.map((d) => ({ date: d, count: 0, total: 0, isFuture: d > todayStr }));
   }
 
   const { data: logs } = await supabase
     .from("task_logs")
     .select("task_id, date")
-    .in("task_id", taskIds)
+    .in("task_id", tasks.map((t) => t.id))
     .gte("date", startDate)
     .lte("date", endDate);
 
@@ -140,11 +142,12 @@ export async function getDailyCompletions(
     if (isFuture) {
       return { date, count: 0, total: 0, isFuture: true };
     }
-    const dayLogs = logs?.filter((l) => l.date === date) || [];
+    const dueIds = new Set(tasks.filter((t) => isTaskDueOn(t, date)).map((t) => t.id));
+    const count = logs?.filter((l) => l.date === date && dueIds.has(l.task_id)).length || 0;
     return {
       date,
-      count: dayLogs.length,
-      total: taskIds.length,
+      count,
+      total: dueIds.size,
       isFuture: false,
     };
   });

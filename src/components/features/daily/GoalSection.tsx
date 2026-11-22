@@ -20,11 +20,13 @@ export default function GoalSection({
   group,
   weeklyRate,
   today,
+  actualToday,
   onTaskToggle,
 }: {
   group: GoalGroup;
   weeklyRate?: number; // this week's hit rate, when the goal has one
   today: string; // the selected date
+  actualToday: string; // the real current date in the user's timezone
   onTaskToggle?: (taskId: string, newState: boolean) => void;
 }) {
   const sectionCount =
@@ -46,7 +48,7 @@ export default function GoalSection({
 
         <TaskSection show={group.thisWeek.length > 0} label={showLabels ? "Weekly" : undefined}>
           {group.thisWeek.map((item) => (
-            <WeeklyTaskItem key={item.task.id} item={item} today={today} onToggle={onTaskToggle} />
+            <WeeklyTaskItem key={item.task.id} item={item} today={today} actualToday={actualToday} onToggle={onTaskToggle} />
           ))}
         </TaskSection>
 

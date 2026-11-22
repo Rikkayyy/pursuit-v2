@@ -73,11 +73,12 @@ export default function DailyViewClient({
   ).length;
   const totalCount = dayTasks.length;
 
-  // Calculate local daily activity (update today's count)
+  // Calculate local daily activity (update the selected day's count).
+  // Same set the server counts in getDailyCompletions: recurring tasks due that day.
   const dailyActivity = initialDailyActivity.map((day) => {
     if (day.date === selectedDate) {
-      const localCount = todaysTasks.filter((t) =>
-        getEffectiveCompleted(t.task.id, t.isCompleted)
+      const localCount = dayTasks.filter(
+        (t) => t.task.type === "recurring" && getEffectiveCompleted(t.task.id, t.isCompleted)
       ).length;
       return { ...day, count: localCount };
     }
@@ -266,6 +267,7 @@ export default function DailyViewClient({
             tasks={todaysTasks}
             anytimeTasks={anytimeTasks}
             today={selectedDate}
+            actualToday={today}
             goalStats={goalStats}
             onTaskToggle={onTaskToggle}
           />

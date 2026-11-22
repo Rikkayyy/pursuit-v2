@@ -18,7 +18,6 @@ export type DailyTask = {
   goalColor: string;
   isCompleted: boolean;
   streak: number;
-  weekCount: number;
   weekDates: string[]; // dates logged this week (Sun–Sat of the selected date)
 };
 
